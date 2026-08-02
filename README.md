@@ -5,7 +5,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.x-38BDF8?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Framer Motion](https://img.shields.io/badge/Framer_Motion-12.43-0055FF?style=flat-square&logo=framer&logoColor=white)](https://www.framer.com/motion/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-EAB308?style=flat-square)](https://opensource.org/licenses/MIT)
+[![License: All Rights Reserved](https://img.shields.io/badge/License-All_Rights_Reserved-DC2626.svg?style=flat-square)](https://github.com/webdeveloperdesigner/Dev-Workspace)
 
 A modern, high-performance developer portfolio built with **Next.js 16**, **React 19**, and **Tailwind CSS**. Features an integrated **AI Assistant** (powered by Google Gemini & Groq LLMs), real-time bilingual support (English / Hindi), a dark/light theme engine, and a responsive floating navigation dock.
 
