@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "Vivek | Full Stack Engineer",
   description: "Modern, minimal personal portfolio website inspired by Arfazrll/Dev-Workspace.",
   keywords: ["Vivek", "Portfolio", "Full Stack Engineer", "Next.js", "React", "TypeScript", "Tailwind CSS"],
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
