@@ -3,9 +3,9 @@ import "./globals.css";
 import { ClientLayout } from "@/components/client-layout";
 
 export const metadata: Metadata = {
-  title: "Vivek Kumar | Full Stack Engineer",
+  title: "Vivek | Full Stack Engineer",
   description: "Modern, minimal personal portfolio website inspired by Arfazrll/Dev-Workspace.",
-  keywords: ["Vivek Kumar", "Portfolio", "Full Stack Engineer", "Next.js", "React", "TypeScript", "Tailwind CSS"],
+  keywords: ["Vivek", "Portfolio", "Full Stack Engineer", "Next.js", "React", "TypeScript", "Tailwind CSS"],
 };
 
 export default function RootLayout({
