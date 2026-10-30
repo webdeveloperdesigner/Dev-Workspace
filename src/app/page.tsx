@@ -26,7 +26,6 @@ import {
   Users,
   MapPin,
   Wrench,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";

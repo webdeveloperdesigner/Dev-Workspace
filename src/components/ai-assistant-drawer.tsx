@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useLanguage } from "./language-provider";
-import { dictionary } from "@/lib/dictionary";
 import { Bot, X, Send, RotateCcw } from "lucide-react";
 
 interface AiAssistantDrawerProps {
@@ -18,7 +17,6 @@ interface Message {
 
 export function AiAssistantDrawer({ isOpen, onClose }: AiAssistantDrawerProps) {
   const { language } = useLanguage();
-  const t = dictionary[language].aiAssistant;
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const initialGreeting =

@@ -3,9 +3,7 @@ import {
   PERSONAL_DATA,
   EXPERIENCES,
   PROJECTS,
-  CERTIFICATIONS,
   TECH_STACK_ITEMS,
-  TOOLS_ITEMS,
 } from "@/lib/data";
 
 interface HistoryMessage {
