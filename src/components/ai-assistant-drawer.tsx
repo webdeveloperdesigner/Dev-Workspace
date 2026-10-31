@@ -3,7 +3,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLanguage } from "./language-provider";
 import { dictionary } from "@/lib/dictionary";
-import { Bot, X, Send, RotateCcw } from "lucide-react";
+import { Bot, X, Send, RotateCcw, Check, Copy, Mail, ExternalLink } from "lucide-react";
+import { FaGithub, FaLinkedin } from "react-icons/fa6";
 
 interface AiAssistantDrawerProps {
   isOpen: boolean;
@@ -14,6 +15,211 @@ interface Message {
   id: string;
   sender: "user" | "ai";
   text: string;
+  source?: "gemini" | "groq" | "offline";
+}
+
+/**
+ * Rich message renderer for Bot responses
+ * Parses markdown headings (###, ##), bullet points (*, -), bold text (**text**), and inline code (`code`)
+ */
+function FormattedAiResponse({ content }: { content: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  const lines = content.split("\n");
+
+  const renderContactLine = (text: string) => {
+    // Detects Email, LinkedIn, or GitHub contact lines
+    const emailMatch = text.match(/(?:Email:?\s*)?\[(.*?)\]\((mailto:.*?)\)/i);
+    if (emailMatch || text.includes("mailto:")) {
+      const label = emailMatch ? emailMatch[1] : text.replace(/.*?(vivek[^\s]+@[^\s]+).*/, "$1");
+      const href = emailMatch ? emailMatch[2] : `mailto:${label}`;
+      return (
+        <div className="flex items-center gap-2 py-1 px-2 rounded-lg bg-muted/40 border border-border/40 hover:bg-muted/70 transition-colors my-1">
+          <div className="w-6 h-6 rounded-md bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+            <Mail className="w-3.5 h-3.5" />
+          </div>
+          <span className="font-semibold text-foreground text-[11px] shrink-0">Email:</span>
+          <a
+            href={href}
+            className="text-emerald-500 hover:text-emerald-400 font-medium underline truncate text-[11px]"
+          >
+            {label}
+          </a>
+        </div>
+      );
+    }
+
+    const linkedInMatch = text.match(/(?:LinkedIn:?\s*)?\[(.*?)\]\((https?:\/\/.*?linkedin\.com.*?)\)/i);
+    if (linkedInMatch || text.toLowerCase().includes("linkedin.com")) {
+      const label = linkedInMatch ? linkedInMatch[1] : "linkedin.com/in/vivek-vns";
+      const href = linkedInMatch ? linkedInMatch[2] : "https://www.linkedin.com/in/vivek-vns/";
+      return (
+        <div className="flex items-center gap-2 py-1 px-2 rounded-lg bg-muted/40 border border-border/40 hover:bg-muted/70 transition-colors my-1">
+          <div className="w-6 h-6 rounded-md bg-[#0A66C2]/10 text-[#0A66C2] flex items-center justify-center shrink-0">
+            <FaLinkedin className="w-3.5 h-3.5" />
+          </div>
+          <span className="font-semibold text-foreground text-[11px] shrink-0">LinkedIn:</span>
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-emerald-500 hover:text-emerald-400 font-medium underline flex items-center gap-1 truncate text-[11px]"
+          >
+            <span className="truncate">{label}</span>
+            <ExternalLink className="w-2.5 h-2.5 opacity-60 shrink-0" />
+          </a>
+        </div>
+      );
+    }
+
+    const githubMatch = text.match(/(?:GitHub:?\s*)?\[(.*?)\]\((https?:\/\/.*?github\.com.*?)\)/i);
+    if (githubMatch || text.toLowerCase().includes("github.com/webdeveloperdesigner")) {
+      const label = githubMatch ? githubMatch[1] : "github.com/webdeveloperdesigner";
+      const href = githubMatch ? githubMatch[2] : "https://github.com/webdeveloperdesigner";
+      return (
+        <div className="flex items-center gap-2 py-1 px-2 rounded-lg bg-muted/40 border border-border/40 hover:bg-muted/70 transition-colors my-1">
+          <div className="w-6 h-6 rounded-md bg-foreground/10 text-foreground flex items-center justify-center shrink-0">
+            <FaGithub className="w-3.5 h-3.5" />
+          </div>
+          <span className="font-semibold text-foreground text-[11px] shrink-0">GitHub:</span>
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-emerald-500 hover:text-emerald-400 font-medium underline flex items-center gap-1 truncate text-[11px]"
+          >
+            <span className="truncate">{label}</span>
+            <ExternalLink className="w-2.5 h-2.5 opacity-60 shrink-0" />
+          </a>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  const renderInlineFormatted = (text: string) => {
+    // Matches markdown links [label](url), bold **bold**, or `code`
+    const tokenRegex = /(\[.*?\]\(.*?\)|\*\*.*?\*\*|`.*?`)/g;
+    const parts = text.split(tokenRegex);
+
+    return parts.map((part, i) => {
+      // Check for Markdown Link: [label](url)
+      const linkMatch = part.match(/^\[(.*?)\]\((.*?)\)$/);
+      if (linkMatch) {
+        const [, label, url] = linkMatch;
+        const isEmail = url.startsWith("mailto:") || label.includes("@");
+
+        return (
+          <a
+            key={i}
+            href={url}
+            target={isEmail ? "_self" : "_blank"}
+            rel="noopener noreferrer"
+            className="text-emerald-500 hover:text-emerald-400 underline font-medium inline-flex items-center gap-1 break-all mx-0.5"
+          >
+            <span>{label}</span>
+            {!isEmail && <ExternalLink className="w-2.5 h-2.5 opacity-60 inline shrink-0" />}
+          </a>
+        );
+      }
+
+      // Check for Bold: **text**
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return (
+          <strong key={i} className="font-semibold text-foreground">
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+
+      // Check for Inline Code: `code`
+      if (part.startsWith("`") && part.endsWith("`")) {
+        return (
+          <code
+            key={i}
+            className="px-1.5 py-0.5 rounded text-[11px] font-mono bg-muted text-emerald-500 border border-border/50"
+          >
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+
+      return part;
+    });
+  };
+
+  return (
+    <div className="relative group">
+      <div className="space-y-1.5 text-xs leading-relaxed text-foreground/90">
+        {lines.map((line, idx) => {
+          const trimmed = line.trim();
+          if (!trimmed) {
+            return <div key={idx} className="h-1.5" />;
+          }
+
+          // Check if this line is a contact line (Email / LinkedIn / GitHub)
+          const contactElement = renderContactLine(trimmed);
+          if (contactElement) {
+            return <React.Fragment key={idx}>{contactElement}</React.Fragment>;
+          }
+
+          // Heading 3 or 2 (### Heading or ## Heading)
+          if (trimmed.startsWith("### ") || trimmed.startsWith("## ")) {
+            const headingText = trimmed.replace(/^#{2,3}\s+/, "");
+            return (
+              <div
+                key={idx}
+                className="pt-2 pb-1 border-b border-border/40 text-xs font-bold tracking-tight text-foreground flex items-center gap-1.5"
+              >
+                <span>{renderInlineFormatted(headingText)}</span>
+              </div>
+            );
+          }
+
+          // Bullet points (* or -)
+          if (trimmed.startsWith("* ") || trimmed.startsWith("- ")) {
+            const bulletText = trimmed.slice(2);
+            return (
+              <div key={idx} className="flex items-start gap-2 pl-1 py-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 mt-1.5 shrink-0" />
+                <span className="flex-1">{renderInlineFormatted(bulletText)}</span>
+              </div>
+            );
+          }
+
+          // Regular paragraph line
+          return (
+            <p key={idx} className="leading-relaxed">
+              {renderInlineFormatted(trimmed)}
+            </p>
+          );
+        })}
+      </div>
+
+      {/* Quick Action copy button */}
+      <button
+        onClick={handleCopy}
+        className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-1 right-1 p-1 rounded-md bg-background/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/40 text-[10px] flex items-center gap-1"
+        title="Copy response"
+      >
+        {copied ? (
+          <>
+            <Check className="w-3 h-3 text-emerald-500" />
+            <span className="text-emerald-500">Copied</span>
+          </>
+        ) : (
+          <Copy className="w-3 h-3" />
+        )}
+      </button>
+    </div>
+  );
 }
 
 export function AiAssistantDrawer({ isOpen, onClose }: AiAssistantDrawerProps) {
@@ -34,6 +240,7 @@ export function AiAssistantDrawer({ isOpen, onClose }: AiAssistantDrawerProps) {
     "Contact",
   ];
 
+  const [isLiveOnline, setIsLiveOnline] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -94,11 +301,14 @@ export function AiAssistantDrawer({ isOpen, onClose }: AiAssistantDrawerProps) {
         }),
       });
       const data = await res.json();
+      const isOnlineSource = data.source === "groq" || data.source === "gemini";
+      setIsLiveOnline(isOnlineSource);
 
       const aiMsg: Message = {
         id: crypto.randomUUID(),
         sender: "ai",
         text: data.reply || "Thank you for reaching out!",
+        source: data.source,
       };
       setMessages((prev) => [...prev, aiMsg]);
 
@@ -106,10 +316,12 @@ export function AiAssistantDrawer({ isOpen, onClose }: AiAssistantDrawerProps) {
         setSuggestions(data.suggestions);
       }
     } catch {
+      setIsLiveOnline(false);
       const aiError: Message = {
         id: crypto.randomUUID(),
         sender: "ai",
         text: "Sorry, I am currently unable to process your request. Please try contacting Vivek directly via email!",
+        source: "offline",
       };
       setMessages((prev) => [...prev, aiError]);
     } finally {
@@ -123,11 +335,23 @@ export function AiAssistantDrawer({ isOpen, onClose }: AiAssistantDrawerProps) {
         {/* Header */}
         <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
           <div>
-            <h3 className="text-base font-extrabold text-foreground tracking-tight">
-              Ask AI Assistant
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-extrabold text-foreground tracking-tight">
+                Ask AI Assistant
+              </h3>
+              {isLiveOnline ? (
+                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-semibold animate-in fade-in duration-300">
+                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Live
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-muted text-muted-foreground border border-border/40 font-medium">
+                  Knowledge Base
+                </span>
+              )}
+            </div>
             <p className="text-[11px] font-mono text-muted-foreground mt-0.5">
-              Powered by Groq &amp; Gemini
+              {isLiveOnline ? "Powered by Groq & Gemini" : "Offline Knowledge Base"}
             </p>
           </div>
           <div className="flex items-center gap-1">
@@ -164,24 +388,29 @@ export function AiAssistantDrawer({ isOpen, onClose }: AiAssistantDrawerProps) {
                 </div>
               )}
 
-              {/* Message Bubble - Matching Image 2 */}
-              <div
-                className={`max-w-[82%] px-4 py-3 text-xs leading-relaxed whitespace-pre-line shadow-xs ${
-                  msg.sender === "user"
-                    ? "bg-foreground text-background font-semibold rounded-2xl rounded-tr-xs"
-                    : "bg-muted/80 text-foreground border border-border/60 rounded-2xl rounded-tl-xs"
-                }`}
-              >
-                {msg.text.split(/(\*\*.*?\*\*)/g).map((part, index) => {
-                  if (part.startsWith("**") && part.endsWith("**")) {
-                    return (
-                      <strong key={index} className="font-extrabold underline decoration-primary/40">
-                        {part.slice(2, -2)}
-                      </strong>
-                    );
-                  }
-                  return part;
-                })}
+              {/* Message Bubble */}
+              <div className="flex flex-col gap-1 max-w-[85%]">
+                {msg.sender === "user" ? (
+                  <div className="px-4 py-2.5 text-xs leading-relaxed bg-foreground text-background font-semibold rounded-2xl rounded-tr-xs shadow-xs">
+                    {msg.text}
+                  </div>
+                ) : (
+                  <div className="px-4 py-3 bg-card border border-border/70 rounded-2xl rounded-tl-xs shadow-xs hover:border-border transition-colors">
+                    <FormattedAiResponse content={msg.text} />
+                  </div>
+                )}
+                {msg.sender === "ai" && msg.source && (
+                  <span className="text-[10px] font-mono text-muted-foreground/80 px-1 self-start flex items-center gap-1.5">
+                    {msg.source === "offline" ? (
+                      <span className="text-muted-foreground/60">Portfolio Knowledge Base</span>
+                    ) : (
+                      <>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        ⚡ Live via {msg.source === "groq" ? "Groq Qwen" : "Gemini"}
+                      </>
+                    )}
+                  </span>
+                )}
               </div>
             </div>
           ))}

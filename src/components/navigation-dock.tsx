@@ -20,6 +20,7 @@ import {
   FolderGit2,
   Wrench,
   BookOpen,
+  GitBranch,
   X,
 } from "lucide-react";
 import { FaGithub, FaLinkedin } from "react-icons/fa6";
@@ -67,6 +68,7 @@ export function NavigationDock({ onOpenAiDrawer }: NavigationDockProps) {
     { href: "/skills", label: t.skills, icon: Wrench },
     { href: "/experience", label: t.experience, icon: Briefcase },
     { href: "/achievements", label: "Achievements", icon: BookOpen },
+    { href: "/changelog", label: "Changelog", icon: GitBranch },
     { href: "/blog", label: t.blog, icon: FileText },
     { href: "/contact", label: t.contact, icon: Mail },
   ];
@@ -210,6 +212,7 @@ export function NavigationDock({ onOpenAiDrawer }: NavigationDockProps) {
             onClick={onOpenAiDrawer}
             title="Ask AI Assistant"
             className="relative p-2 sm:p-2.5 rounded-full text-emerald-500 hover:bg-emerald-500/10 transition-all duration-200 ease-out group flex items-center justify-center hover:scale-125 sm:hover:scale-130 hover:-translate-y-0.5 sm:hover:-translate-y-1"
+            suppressHydrationWarning
           >
             <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-pulse transition-transform group-hover:scale-110" />
             <span className="sr-only">AI Assistant</span>
@@ -241,6 +244,7 @@ export function NavigationDock({ onOpenAiDrawer }: NavigationDockProps) {
               ? "bg-foreground text-background"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
           }`}
+          suppressHydrationWarning
         >
           <ChevronUp className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${isPagesOpen ? "rotate-180" : ""}`} />
           <span className="sr-only">All Pages</span>
@@ -258,6 +262,7 @@ export function NavigationDock({ onOpenAiDrawer }: NavigationDockProps) {
           onClick={toggleLanguage}
           title={t.lang}
           className="relative p-2 sm:p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200 ease-out group flex items-center justify-center hover:scale-125 sm:hover:scale-130 hover:-translate-y-0.5 sm:hover:-translate-y-1"
+          suppressHydrationWarning
         >
           <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform group-hover:scale-110" />
           <span className="text-[8px] sm:text-[9px] font-bold uppercase ml-0.5 sm:ml-1">{language}</span>

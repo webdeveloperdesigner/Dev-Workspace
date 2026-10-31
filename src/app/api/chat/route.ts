@@ -3,6 +3,7 @@ import {
   PERSONAL_DATA,
   EXPERIENCES,
   PROJECTS,
+  ORGANIZATIONS,
   CERTIFICATIONS,
   TECH_STACK_ITEMS,
   TOOLS_ITEMS,
@@ -13,10 +14,44 @@ interface HistoryMessage {
   text: string;
 }
 
+// In-memory rate limiting map for chat API protection (IP-based)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
 export async function POST(req: Request) {
   try {
+    // 1. IP extraction & Rate Limiting (max 20 requests per minute per IP)
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("x-real-ip") ||
+      "anonymous-client";
+
+    const now = Date.now();
+    const clientRecord = rateLimitMap.get(ip);
+
+    if (clientRecord && now < clientRecord.resetTime) {
+      if (clientRecord.count >= 20) {
+        return NextResponse.json(
+          {
+            reply: "You've sent quite a few messages! Please wait a moment before sending another.",
+            source: "offline",
+            suggestions: ["Contact Vivek", "Projects", "Skills"],
+          },
+          { status: 429 }
+        );
+      }
+      clientRecord.count++;
+    } else {
+      rateLimitMap.set(ip, { count: 1, resetTime: now + 60 * 1000 });
+    }
+
     const { message, language, history } = await req.json();
-    const userQuery = (message || "").trim();
+    const rawUserQuery = (message || "").trim();
+
+    // 2. Input Length & Sanitation Limit (Prevent prompt injection / token exhaustion attacks)
+    const userQuery = rawUserQuery.slice(0, 500);
+    if (!userQuery) {
+      return NextResponse.json({ reply: "Please enter a message." }, { status: 400 });
+    }
 
     // Format conversation history
     const conversationHistory = Array.isArray(history)
@@ -37,7 +72,7 @@ export async function POST(req: Request) {
       try {
         const ghRes = await fetch(
           "https://api.github.com/users/webdeveloperdesigner/repos?sort=updated&per_page=6",
-          { headers: { "User-Agent": "antigravity-portfolio" }, next: { revalidate: 3600 } }
+          { headers: { "User-Agent": "antigravity-portfolio" }, next: { revalidate: 60 } }
         );
         if (ghRes.ok) {
           const repos = await ghRes.json();
@@ -55,38 +90,45 @@ export async function POST(req: Request) {
       }
     }
 
-    // System prompt engineered for expert question-answering + portfolio context grounding
+    // System prompt engineered for strict portfolio & Vivek scope
     const systemContext = `
-You are Vivek's AI Companion on his Developer Portfolio. You speak like a knowledgeable, warm, and tech-savvy software engineering teammate.
+You are Vivek's AI Companion on his personal Developer Portfolio.
+Your sole mission is to assist visitors with information about Vivek: his projects, technical skills (Full-Stack, Blockchain, AI), work experience, education at GLA University, and how to contact him.
 
 Language: ${language === "hi" ? "Hindi" : "English"}
 
-# CORE RESPONSIBILITY: ANSWER THE USER'S QUESTION FIRST!
-1. **Distinguish Between General Technical Knowledge & Portfolio Facts**:
-   - If the user asks about a general concept or standard (e.g. "Tell me about ERC-20", "What is Web3?", "How do smart contracts work?"):
-     - **ALWAYS explain the concept clearly first** with technical accuracy.
-     - **THEN** relate the concept to Vivek's skills, foundation, and experience.
-   - Example:
-     User: "Tell me about ERC-20."
-     Response: "**ERC-20** is the standard for creating fungible tokens on Ethereum, defining core functions like \`transfer\`, \`approve\`, and \`balanceOf\` so wallets and dApps can interact with tokens seamlessly. Vivek has strong hands-on foundation in **Solidity**, **Ethereum**, and **Smart Contracts** through his Blockchain Engineering focus. While his portfolio emphasizes full-stack AI applications like BodhAI, he understands token standards and Web3 architecture thoroughly."
+# STRICT SCOPE & BOUNDARY RULES:
+1. **PORTFOLIO BOUNDARY**:
+   - You MUST ONLY answer questions related to Vivek, his portfolio, his skills, his projects (like BodhAI), his tech stack (React, Next.js, Solidity, Firebase, etc.), or getting in touch with him.
+   - If the user asks about completely unrelated, out-of-scope topics (e.g. general drafting unrelated letters, politics, sports, random coding tasks not related to Vivek's work, general knowledge trivia):
+     - **Politely decline and redirect back to Vivek's portfolio**.
+     - Example response: "I'm specifically tuned to answer questions about Vivek's portfolio, projects, and skills. Feel free to ask about his work on BodhAI, his Blockchain experience, or his tech stack!"
 
-2. **Blockchain & Web3 Questions**:
-   - When asked about Vivek's blockchain projects or Web3 work (e.g. "tell me project about of blockchain"):
-     - Answer directly: Explain that Vivek is a **Blockchain Engineer & Full Stack Developer** at GLA University skilled in **Solidity**, **Ethereum**, **Web3.js**, and **Smart Contracts**.
-     - Highlight his **Key Blockchain Expertise**:
-       - 🔗 **Smart Contract Development** with **Solidity**
-       - ⛓️ **Ethereum Ecosystem** and **ERC standards** (ERC-20, ERC-721)
-       - 🌐 **Web3.js & Ethers.js** frontend integration
-       - 🔐 **Wallet Connectivity** (MetaMask) and dApp interactions
-     - Conclude by noting how these skills enable him to build dApps, token systems, or NFT platforms.
+2. **RELEVANT TECHNICAL KNOWLEDGE EXCEPTION**:
+   - If the user asks about a technical concept directly connected to Vivek's tech stack (e.g. "What is ERC-20?", "What is Solidity?", "How does Next.js work with Firebase?"):
+     - You may give a brief 2-sentence explanation of the concept, but immediately connect it back to how Vivek uses it.
 
-3. **Natural Conversational Persona**:
-   - Warm greetings: "Hi! 👋 What would you like to know about Vivek?" or "Hello again! 😊 Great to chat with you!"
-   - NO corporate HR buzzwords (do NOT say "evaluate qualifications", "discuss architectural experience", or "specify topic").
-   - Use bold markdown for key technologies (**Solidity**, **React**, **Next.js**, **BodhAI**, **GLA University**).
+3. **CONCISE & DIRECT**:
+   - Keep all responses concise (under 2-3 short paragraphs or bullet points).
+   - NEVER generate generic long essays, multi-option templates, or unrelated generic drafts.
+   - For contacting Vivek, give his real direct channels cleanly:
+     - Email: [${PERSONAL_DATA.email}](mailto:${PERSONAL_DATA.email})
+     - LinkedIn: [linkedin.com/in/vivek-vns](${PERSONAL_DATA.linkedin})
+     - GitHub: [github.com/webdeveloperdesigner](${PERSONAL_DATA.github})
 
-4. **Featured Projects (BodhAI & Web Apps)**:
-   - When asked about projects like **BodhAI**, explain it clearly as an AI-powered practice platform using **React**, **Firebase**, **Node.js**, and **AI Analytics**.
+4. **Changelog & Updates Awareness**:
+   - If the user asks about updates, changelog, new versions, or what's new (e.g. "what's new?", "show changelog", "updates", "चेंजलॉग"):
+     - Explain the recent milestone highlights:
+       - **v2.0.0 (Latest Release - Oct 31, 2026)**: Sub-second live AI Companion (Groq & Gemini), enterprise security headers & IP rate limiting, and updated verified tech stack.
+       - **v1.9.0**: Interactive clickable contact cards for Email, LinkedIn, and GitHub.
+       - **v1.8.0**: Turbopack root config & build speed fixes.
+       - **v1.5.0**: Custom glowing VK logo favicon and Dev-Workspace AI foundation.
+       - **Full History**: Portfolio timeline spans from initial inception **v0.1.0** (July 1, 2026) to **v2.0.0** (Today).
+     - Direct the user to view the complete visual timeline: "You can explore the full interactive timeline on the [/changelog](/changelog) page!"
+
+5. **TONE & PERSONA**:
+   - Warm, friendly, tech-savvy peer.
+   - Highlight key projects like **BodhAI** and his **Blockchain Engineering** foundation at **GLA University**.
 
 # Vivek's Profile Data:
 - **Name**: ${PERSONAL_DATA.name}
@@ -115,53 +157,20 @@ ${EXPERIENCES.map(
     `- **${exp.role}** at **${exp.company}** (${exp.period}): ${exp.description.en} [Skills: ${exp.skills.join(", ")}]`
 ).join("\n")}
 
+# Organizations & Leadership:
+${ORGANIZATIONS.map(
+  (org) =>
+    `- **${org.name}** (${org.role.en}, ${org.period}): ${org.description.en}${org.tags ? ` [Tags: ${org.tags.join(", ")}]` : ""}`
+).join("\n")}
+
 # Technical Stack:
 ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
 `;
 
-    const apiKeyGemini = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     const apiKeyGroq = process.env.GROQ_API_KEY || process.env.NEXT_PUBLIC_GROQ_API_KEY;
+    const apiKeyGemini = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
-    // 1. Try Google Gemini API FIRST
-    if (apiKeyGemini) {
-      try {
-        const geminiHistory = conversationHistory.map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`).join("\n");
-        const fullPrompt = `${systemContext}\n\n# Conversation History:\n${geminiHistory}\n\nUser Question: ${userQuery}`;
-
-        const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKeyGemini}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: fullPrompt }] }],
-              generationConfig: { maxOutputTokens: 400, temperature: 0.6 },
-            }),
-          }
-        );
-
-        if (geminiRes.ok) {
-          const gData = await geminiRes.json();
-          const reply = gData.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-          if (reply) {
-            return NextResponse.json({
-              reply,
-              suggestions: [
-                "Blockchain Work",
-                "Tell me about BodhAI",
-                "Skills & Tech Stack",
-                "Work Experience",
-                "Contact Vivek",
-              ],
-            });
-          }
-        }
-      } catch (err) {
-        console.error("Gemini API call error:", err);
-      }
-    }
-
-    // 2. Try Groq API SECOND
+    // 1. Try Groq API FIRST (ultra-fast ~200ms latency, always available, immune to Google 503 spikes)
     if (apiKeyGroq) {
       try {
         const response = await fetch(
@@ -173,14 +182,14 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
               Authorization: `Bearer ${apiKeyGroq}`,
             },
             body: JSON.stringify({
-              model: "llama-3.3-70b-versatile",
+              model: "qwen/qwen3.8-27b",
               messages: [
                 { role: "system", content: systemContext },
                 ...conversationHistory,
                 { role: "user", content: userQuery },
               ],
               temperature: 0.6,
-              max_tokens: 400,
+              max_tokens: 650,
             }),
           }
         );
@@ -191,18 +200,71 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
           if (reply) {
             return NextResponse.json({
               reply,
+              source: "groq",
               suggestions: [
+                "View Changelog",
                 "Blockchain Work",
                 "Tell me about BodhAI",
                 "Skills & Tech Stack",
-                "Work Experience",
                 "Contact Vivek",
               ],
             });
           }
+        } else {
+          const groqErr = await response.text();
+          console.warn("Groq primary failed, status:", response.status, groqErr);
         }
       } catch (err) {
-        console.error("Groq API call error:", err);
+        console.error("Groq primary error:", err);
+      }
+    }
+
+    // 2. Try Google Gemini API (gemini-3.1-flash-lite / gemini-flash-latest) as resilient fallback
+    if (apiKeyGemini) {
+      try {
+        const geminiHistory = conversationHistory.map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`).join("\n");
+        const fullPrompt = `${systemContext}\n\n# Conversation History:\n${geminiHistory}\n\nUser Question: ${userQuery}`;
+
+        const geminiModels = ["gemini-3.1-flash-lite", "gemini-flash-latest"];
+        for (const modelName of geminiModels) {
+          const geminiRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKeyGemini}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-goog-api-key": apiKeyGemini,
+              },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: fullPrompt }] }],
+                generationConfig: { maxOutputTokens: 600, temperature: 0.7 },
+              }),
+            }
+          );
+
+          if (geminiRes.ok) {
+            const gData = await geminiRes.json();
+            const reply = gData.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+            if (reply) {
+              return NextResponse.json({
+                reply,
+                source: "gemini",
+                suggestions: [
+                  "View Changelog",
+                  "Blockchain Work",
+                  "Tell me about BodhAI",
+                  "Skills & Tech Stack",
+                  "Contact Vivek",
+                ],
+              });
+            }
+          } else {
+            const errBody = await geminiRes.text();
+            console.warn(`Gemini (${modelName}) failed, status:`, geminiRes.status, errBody);
+          }
+        }
+      } catch (err) {
+        console.error("Gemini API call error:", err);
       }
     }
 
@@ -233,6 +295,11 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
         language === "hi"
           ? "**ERC-20** एथेरियम पर फंगिबल टोकन बनाने के लिए उपयोग किया जाने वाला मानक है। यह `transfer`, `approve` और `balanceOf` जैसे कार्यों को परिभाषित करता है।\n\nविवेक के पास **Solidity** और **स्मार्ट कॉन्ट्रैक्ट्स** में व्यावहारिक अनुभव है जो ERC-20 टोकन बनाने के लिए मुख्य प्रौद्योगिकियां हैं।"
           : "**ERC-20** is the standard used to create fungible tokens on Ethereum. It defines core functions such as `transfer`, `approve`, and `balanceOf` so wallets and exchanges can interact with tokens consistently.\n\nVivek has strong experience with **Solidity** and **smart contracts**, which are the core technologies used to build ERC-20 tokens. While his portfolio currently showcases full-stack AI apps like BodhAI, he possesses the complete Web3 engineering foundation to build decentralized token systems.";
+    } else if (query.includes("changelog") || query.includes("update") || query.includes("version") || query.includes("what's new") || query.includes("whats new") || query.includes("नया")) {
+      reply =
+        language === "hi"
+          ? "यहाँ हालिया प्रमुख अपडेट्स हैं:\n\n* **v2.0.0 (31 अक्टूबर 2026)**: लाइव AI साथी (Groq व Gemini), मजबूत सुरक्षा (HSTS, Rate Limiting) और सत्यापित स्किल्स संरेखण।\n* **v1.9.0**: संपर्क के लिए सुंदर क्लिक करने योग्य कार्ड (Email, LinkedIn, GitHub)।\n* **v1.8.0**: Turbopack स्पीड और लोडिंग सुधार।\n* **v0.1.0 से 2.0.0**: 1 जुलाई 2026 से आज तक का पूरा सफर।\n\nआप पूरा इंटरेक्टिव चेंजलॉग [/changelog](/changelog) पेज पर देख सकते हैं!"
+          : "Here are the latest highlights from Vivek's portfolio:\n\n* **v2.0.0 (Oct 31, 2026)**: Real-time AI Companion (Groq Qwen & Gemini 3.1), enterprise security headers (HSTS, rate limiting), and verified skills alignment.\n* **v1.9.0**: Interactive clickable contact cards for Email, LinkedIn, and GitHub.\n* **v1.8.0**: Turbopack build and speed optimizations.\n* **Full Journey**: 20 chronological releases spanning from **v0.1.0** (July 1, 2026) to **v2.0.0** (Today).\n\nCheck out the full interactive timeline at [/changelog](/changelog)!";
     } else if (query.includes("bodhai")) {
       reply =
         language === "hi"
@@ -247,11 +314,12 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
 
     return NextResponse.json({
       reply,
+      source: "offline",
       suggestions: [
+        "View Changelog",
         "Blockchain Work",
         "Tell me about BodhAI",
         "Skills & Tech Stack",
-        "Work Experience",
         "Contact Vivek",
       ],
     });
@@ -259,6 +327,7 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
     console.error("Chat API error:", error);
     return NextResponse.json({
       reply: "Hi! I'm Vivek's AI assistant. Feel free to ask me anything about his projects, technical skills, or work experience!",
+      source: "offline",
       suggestions: ["Show Projects", "Skills", "Experience", "Contact"],
     });
   }

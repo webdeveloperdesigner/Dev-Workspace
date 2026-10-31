@@ -17,7 +17,9 @@ import {
 import { BLOG_POSTS } from "@/lib/blog-data";
 import { HeaderClock } from "@/components/header-clock";
 import { ExperienceAccordion } from "@/components/experience-accordion";
+import { OrganizationAccordion } from "@/components/organization-accordion";
 import { ProjectCard } from "@/components/project-card";
+import { WhatsNewPopup } from "@/components/whats-new-popup";
 import {
   BadgeCheck,
   ArrowUpRight,
@@ -26,7 +28,6 @@ import {
   Users,
   MapPin,
   Wrench,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -48,6 +49,9 @@ export default function HomePage() {
 
   return (
     <div className="space-y-10 animate-in fade-in duration-300">
+      {/* What's New Popup Modal */}
+      <WhatsNewPopup />
+
       {/* Profile Header */}
       <section className="space-y-6">
         <div className="flex flex-col-reverse md:flex-row items-start justify-between gap-6">
@@ -63,7 +67,7 @@ export default function HomePage() {
               {PERSONAL_DATA.title}
             </p>
 
-            {/* Status, Location & Clock Pills (100% single line on PC/Laptop) */}
+            {/* Status, Location & Clock Pills */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground pt-2">
               <div className="flex items-center gap-2 shrink-0">
                 <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -87,7 +91,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Avatar Ring with Dropdown Arrow (Arfazrll style) */}
+          {/* Avatar Ring */}
           <div className="relative inline-block shrink-0 group">
             <div className="relative flex shrink-0 overflow-hidden size-24 md:size-28 border rounded-full shadow-lg ring-4 ring-muted bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-0.5">
               <div className="flex h-full w-full items-center justify-center rounded-full bg-card font-bold text-xl md:text-2xl text-foreground">
@@ -152,7 +156,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 1. Dedicated About Section */}
+      {/* About Section */}
       <section id="about" className="space-y-3 pt-2">
         <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
           {t.sections.about}
@@ -164,7 +168,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. Work Experience Section */}
+      {/* Work Experience Section */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
@@ -182,7 +186,7 @@ export default function HomePage() {
         <ExperienceAccordion experiences={EXPERIENCES} />
       </section>
 
-      {/* 3. Education Section */}
+      {/* Education Section */}
       <section className="space-y-4">
         <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
           <GraduationCap className="w-5 h-5 text-primary" />
@@ -219,30 +223,10 @@ export default function HomePage() {
           <span>{t.sections.organizations}</span>
         </h2>
 
-        <div className="space-y-3">
-          {ORGANIZATIONS.map((org, idx) => (
-            <div
-              key={idx}
-              className="p-4 rounded-xl border border-border/70 bg-card/60 glass-card space-y-1"
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="text-base sm:text-lg font-bold text-foreground">
-                  {org.name}
-                </h3>
-                <span className="text-xs font-mono text-muted-foreground">
-                  {org.period}
-                </span>
-              </div>
-              <p className="text-xs sm:text-sm font-semibold text-primary">{org.role[language]}</p>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mt-1">
-                {org.description[language]}
-              </p>
-            </div>
-          ))}
-        </div>
+        <OrganizationAccordion organizations={ORGANIZATIONS} />
       </section>
 
-      {/* 4. Skills Showcase Section */}
+      {/* Skills Showcase Section */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
@@ -320,7 +304,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. Featured Projects Section */}
+      {/* Featured Projects Section */}
       <section className="space-y-4 text-center py-4">
         <div className="flex flex-col items-center justify-center space-y-2">
           <div className="flex items-center justify-center gap-3 w-full my-1">
@@ -349,7 +333,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 6. Certifications & Achievements Section */}
+      {/* Certifications & Achievements Section */}
       <section className="space-y-4 text-center py-4">
         <div className="flex flex-col items-center justify-center space-y-2">
           <div className="flex items-center justify-center gap-3 w-full my-1">
@@ -399,7 +383,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 7. Gallery Section */}
+      {/* Gallery Section */}
       <section className="space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-border/60">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
@@ -415,7 +399,6 @@ export default function HomePage() {
         </div>
 
         <div className="relative group pt-2">
-          {/* Gallery Carousel Card */}
           <div className="relative h-64 sm:h-72 w-full rounded-2xl overflow-hidden border border-border bg-card shadow-lg">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -433,7 +416,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Left Arrow Button */}
           <button
             onClick={prevGallery}
             className="absolute left-3 top-1/2 -translate-y-1/2 size-10 rounded-full bg-background/80 hover:bg-background text-foreground border border-border flex items-center justify-center backdrop-blur-md transition-all shadow-md z-10"
@@ -442,7 +424,6 @@ export default function HomePage() {
             <ChevronLeft className="size-5" />
           </button>
 
-          {/* Right Arrow Button */}
           <button
             onClick={nextGallery}
             className="absolute right-3 top-1/2 -translate-y-1/2 size-10 rounded-full bg-background/80 hover:bg-background text-foreground border border-border flex items-center justify-center backdrop-blur-md transition-all shadow-md z-10"
@@ -453,7 +434,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 8. Writings / Blog Section */}
+      {/* Writings / Blog Section */}
       <section className="space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-border/60">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
@@ -494,16 +475,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 9. Contact / CTA Section */}
+      {/* Contact / CTA Section */}
       <section className="relative text-center pt-8 pb-4">
-        {/* Contact Pill Badge */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
           <div className="px-5 py-1 rounded-full bg-foreground text-background text-xs font-semibold shadow-md border border-border/20">
             <span>{language === "hi" ? "संपर्क" : "Contact"}</span>
           </div>
         </div>
 
-        {/* Card Container */}
         <div className="p-8 sm:p-12 rounded-3xl border border-border/80 bg-card/70 glass-card space-y-4 pt-10">
           <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground">
             {language === "hi" ? "संपर्क करें" : "Get in Touch"}

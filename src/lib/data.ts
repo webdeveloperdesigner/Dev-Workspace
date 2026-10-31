@@ -144,6 +144,9 @@ export interface Organization {
     en: string;
     hi: string;
   };
+  tags?: string[];
+  imageUrl?: string;
+  linkUrl?: string;
 }
 
 export const PERSONAL_DATA = {
@@ -334,16 +337,45 @@ export const EDUCATIONS: Education[] = [
 
 export const ORGANIZATIONS: Organization[] = [
   {
-    name: "GLA University Technical Club",
+    name: "GLA University",
     role: {
-      en: "Core Technical Member & Web Contributor",
-      hi: "कोर तकनीकी सदस्य एवं वेब योगदानकर्ता",
+      en: "Academic & Technical Community",
+      hi: "शैक्षणिक एवं तकनीकी समुदाय",
     },
-    period: "2023 - Present",
+    period: "2022 – 2026",
     description: {
-      en: "Participated and organized coding hackathons, technical workshops, and web dev bootcamps.",
-      hi: "कोडिंग हैकाथॉन, तकनीकी कार्यशालाओं और वेब देव बूटकैंप का आयोजन और भागीदारी की।",
+      en: "Participated in technical learning activities, workshops, and university-level development initiatives.",
+      hi: "तकनीकी शिक्षण गतिविधियों, कार्यशालाओं और विश्वविद्यालय स्तर की विकास पहलों में भाग लिया।",
     },
+    tags: ["Technical Learning", "Collaboration"],
+    imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/4/42/GLA_University_logo.png/250px-GLA_University_logo.png",
+  },
+  {
+    name: "TechCentrals",
+    role: {
+      en: "Technology Contributor",
+      hi: "टेक्नोलॉजी योगदानकर्ता",
+    },
+    period: "2024 – 2025",
+    description: {
+      en: "Contributed to technology-focused content and explored emerging trends in software development and technology.",
+      hi: "तकनीक-केंद्रित सामग्री में योगदान दिया और सॉफ्टवेयर विकास एवं प्रौद्योगिकी में उभरते रुझानों की खोज की।",
+    },
+    tags: ["Technology", "Content Contribution"],
+  },
+  {
+    name: "Developer Community",
+    role: {
+      en: "Independent Projects & Collaboration",
+      hi: "स्वतंत्र परियोजनाएं और सहयोग",
+    },
+    period: "2023 – Present",
+    description: {
+      en: "Building projects across Full-Stack Development, Blockchain, and AI while continuously improving problem-solving and engineering skills.",
+      hi: "समस्या समाधान और इंजीनियरिंग कौशल में लगातार सुधार करते हुए फुल-स्टैक डेवलपमेंट, ब्लॉकचेन और एआई में प्रोजेक्ट्स का निर्माण।",
+    },
+    tags: ["Full-Stack", "AI & Blockchain"],
+    imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=200&q=80",
   },
 ];
 
@@ -378,47 +410,38 @@ export interface SoftSkillItem {
 }
 
 export const TECH_STACK_ITEMS: TechSkill[] = [
-  { name: "Python", icon: "https://cdn.simpleicons.org/python" },
   { name: "TypeScript", icon: "https://cdn.simpleicons.org/typescript" },
   { name: "JavaScript", icon: "https://cdn.simpleicons.org/javascript" },
-  { name: "Solidity", icon: "https://cdn.simpleicons.org/solidity" },
+  { name: "HTML5", icon: "https://cdn.simpleicons.org/html5" },
+  { name: "CSS3", icon: "https://cdn.simpleicons.org/css3" },
   { name: "React", icon: "https://cdn.simpleicons.org/react" },
   { name: "Next.js", icon: "https://cdn.simpleicons.org/nextdotjs" },
-  { name: "Node.js", icon: "https://cdn.simpleicons.org/nodedotjs" },
-  { name: "TensorFlow", icon: "https://cdn.simpleicons.org/tensorflow" },
-  { name: "Scikit-learn", icon: "https://cdn.simpleicons.org/scikitlearn" },
-  { name: "Pandas", icon: "https://cdn.simpleicons.org/pandas" },
-  { name: "NumPy", icon: "https://cdn.simpleicons.org/numpy" },
-  { name: "Matplotlib", icon: "https://cdn.simpleicons.org/python" },
   { name: "Tailwind CSS", icon: "https://cdn.simpleicons.org/tailwindcss" },
-  { name: "Redis", icon: "https://cdn.simpleicons.org/redis" },
-  { name: "PostgreSQL", icon: "https://cdn.simpleicons.org/postgresql" },
-  { name: "Kubernetes", icon: "https://cdn.simpleicons.org/kubernetes" },
-  { name: "Docker", icon: "https://cdn.simpleicons.org/docker" },
-  { name: "Terraform", icon: "https://cdn.simpleicons.org/terraform" },
-  { name: "LangChain", icon: "https://cdn.simpleicons.org/chainlink" },
-  { name: "Mistral AI", icon: "https://cdn.simpleicons.org/openai" },
-  { name: "PyTorch", icon: "https://cdn.simpleicons.org/pytorch" },
-  { name: "OpenCV", icon: "https://cdn.simpleicons.org/opencv" },
+  { name: "Bootstrap", icon: "https://cdn.simpleicons.org/bootstrap" },
+  { name: "Python", icon: "https://cdn.simpleicons.org/python" },
+  { name: "C", icon: "https://cdn.simpleicons.org/c" },
+  { name: "Solidity", icon: "https://cdn.simpleicons.org/solidity" },
+  { name: "Ethereum", icon: "https://cdn.simpleicons.org/ethereum" },
+  { name: "Web3.js", icon: "https://cdn.simpleicons.org/web3dotjs" },
+  { name: "Node.js", icon: "https://cdn.simpleicons.org/nodedotjs" },
   { name: "FastAPI", icon: "https://cdn.simpleicons.org/fastapi" },
   { name: "Flask", icon: "https://cdn.simpleicons.org/flask" },
-  { name: "C", icon: "https://cdn.simpleicons.org/c" },
+  { name: "PostgreSQL", icon: "https://cdn.simpleicons.org/postgresql" },
   { name: "MongoDB", icon: "https://cdn.simpleicons.org/mongodb" },
   { name: "Firebase", icon: "https://cdn.simpleicons.org/firebase" },
-  { name: "Bootstrap", icon: "https://cdn.simpleicons.org/bootstrap" },
+  { name: "OpenCV", icon: "https://cdn.simpleicons.org/opencv" },
 ];
 
 export const TOOLS_ITEMS: TechSkill[] = [
   { name: "VS Code", icon: "https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg" },
+  { name: "GitHub", icon: "https://cdn.simpleicons.org/github" },
+  { name: "Git", icon: "https://cdn.simpleicons.org/git" },
+  { name: "Linux", icon: "https://cdn.simpleicons.org/linux" },
+  { name: "Vercel", icon: "https://cdn.simpleicons.org/vercel" },
+  { name: "Postman", icon: "https://cdn.simpleicons.org/postman" },
   { name: "Jupyter", icon: "https://cdn.simpleicons.org/jupyter" },
   { name: "Google Colab", icon: "https://cdn.simpleicons.org/googlecolab" },
   { name: "Figma", icon: "https://cdn.simpleicons.org/figma" },
-  { name: "GitHub", icon: "https://cdn.simpleicons.org/github" },
-  { name: "Git", icon: "https://cdn.simpleicons.org/git" },
-  { name: "Docker", icon: "https://cdn.simpleicons.org/docker" },
-  { name: "Conda", icon: "https://cdn.simpleicons.org/anaconda" },
-  { name: "Linux", icon: "https://cdn.simpleicons.org/linux" },
-  { name: "Postman", icon: "https://cdn.simpleicons.org/postman" },
   { name: "Canva", icon: "https://cdn.simpleicons.org/canva" },
   { name: "WordPress", icon: "https://cdn.simpleicons.org/wordpress" },
 ];
@@ -551,11 +574,11 @@ export const HARD_SKILLS_DATA: HardSkillCategory[] = [
         },
       },
       {
-        name: "Docker & Kubernetes",
+        name: "Cloud & Deployment",
         level: "INTERMEDIATE",
         description: {
-          en: "Containerizing microservices and orchestrating multi-node cloud deployments.",
-          hi: "माइक्रोसर्विस कंटेनरीकरण और मल्टी-नोड क्लाउड परिनियोजन आर्केस्ट्रेशन।",
+          en: "Deploying and managing web applications on cloud platforms like Vercel, Firebase, and Linux servers.",
+          hi: "Vercel, Firebase और Linux सर्वर जैसे क्लाउड प्लेटफ़ॉर्म पर वेब एप्लिकेशन को तैनात और प्रबंधित करना।",
         },
       },
     ],
