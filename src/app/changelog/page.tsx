@@ -511,15 +511,15 @@ export default function ChangelogPage() {
           return (
             <div key={entry.id} className="relative group">
               
-              {/* Timeline Marker: Perfectly centered on the green line */}
-              <div className="absolute left-[-17px] sm:left-[-21px] -translate-x-1/2 top-1.5 flex items-center justify-center">
+              {/* Timeline Marker: Perfectly centered on the green line (left-[11px] sm:left-[15px] relative to parent) */}
+              <div className="absolute left-[-17px] sm:left-[-21px] top-1.5 size-4 -translate-x-1/2 flex items-center justify-center pointer-events-none">
                 {isLatest ? (
                   // Active Marker: Green-filled circle with ping glow
                   <div className="relative size-3.5 sm:size-4 rounded-full bg-emerald-500 border-2 border-background shadow-[0_0_10px_rgba(16,185,129,0.8)] z-10 transition-transform group-hover:scale-125">
-                    <span className="absolute -inset-1 rounded-full bg-emerald-400/40 animate-ping pointer-events-none" />
+                    <span className="absolute -inset-1 rounded-full bg-emerald-400/40 animate-ping" />
                   </div>
                 ) : (
-                  // Upcoming/Previous Steps: Crisp white-filled circles
+                  // Upcoming/Previous Steps: Crisp white-filled circles perfectly centered
                   <div className="size-3 sm:size-3.5 rounded-full bg-white border-2 border-background z-10 transition-transform group-hover:scale-125 shadow-xs" />
                 )}
               </div>

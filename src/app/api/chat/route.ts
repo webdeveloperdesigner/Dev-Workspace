@@ -111,10 +111,21 @@ Language: ${language === "hi" ? "Hindi" : "English"}
 3. **CONCISE & DIRECT**:
    - Keep all responses concise (under 2-3 short paragraphs or bullet points).
    - NEVER generate generic long essays, multi-option templates, or unrelated generic drafts.
-   - For contacting Vivek, give his real direct channels cleanly:
-     - Email: [${PERSONAL_DATA.email}](mailto:${PERSONAL_DATA.email})
-     - LinkedIn: [linkedin.com/in/vivek-vns](${PERSONAL_DATA.linkedin})
-     - GitHub: [github.com/webdeveloperdesigner](${PERSONAL_DATA.github})
+   - For contacting Vivek, ALWAYS format contact links as individual, dedicated bullet points on their own line so they render cleanly:
+     * 📧 Email: [${PERSONAL_DATA.email}](mailto:${PERSONAL_DATA.email})
+     * 💼 LinkedIn: [linkedin.com/in/vivek-vns](${PERSONAL_DATA.linkedin})
+     * 🐙 GitHub: [github.com/webdeveloperdesigner](${PERSONAL_DATA.github})
+   - NEVER combine multiple contact links inside a single sentence (e.g. avoid "review on GitHub or connect via LinkedIn" on one line). Keep them as separate bullet points.
+   - **UPCOMING FEATURE (1-on-1 Live Chat & Direct Contact)**:
+     - If visitors ask about live chat, real-time messaging, 1-on-1 calls, direct live support, or real-time communication:
+       - Clearly inform them that **1-on-1 Live Chat & Direct Contact** is **Available Soon**!
+       - In the meantime, invite them to connect directly via [Email](mailto:${PERSONAL_DATA.email}) or [LinkedIn](${PERSONAL_DATA.linkedin}).
+   - **DESKTOP-FIRST PORTFOLIO**:
+     - Vivek's dedicated desktop experience is live at [https://vivek01.vercel.app/](https://vivek01.vercel.app/). Note that this portfolio is designed specifically for desktop devices.
+   - **LIVE TIPS & PRO TIPS**:
+     - If the user asks for a tip, live tip, pro tip, advice, or career/coding tips:
+       - Give practical developer tips based on Vivek's actual real-world stack (Next.js 15, Turbopack, Tailwind CSS, Solidity smart contracts, AI integration with Groq/Gemini, and clean Git commits).
+       - Keep it inspiring, concise, and actionable!
 
 4. **Changelog & Updates Awareness**:
    - If the user asks about updates, changelog, new versions, or what's new (e.g. "what's new?", "show changelog", "updates", "चेंजलॉग"):
@@ -300,6 +311,25 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
         language === "hi"
           ? "यहाँ हालिया प्रमुख अपडेट्स हैं:\n\n* **v2.0.0 (31 अक्टूबर 2026)**: लाइव AI साथी (Groq व Gemini), मजबूत सुरक्षा (HSTS, Rate Limiting) और सत्यापित स्किल्स संरेखण।\n* **v1.9.0**: संपर्क के लिए सुंदर क्लिक करने योग्य कार्ड (Email, LinkedIn, GitHub)।\n* **v1.8.0**: Turbopack स्पीड और लोडिंग सुधार।\n* **v0.1.0 से 2.0.0**: 1 जुलाई 2026 से आज तक का पूरा सफर।\n\nआप पूरा इंटरेक्टिव चेंजलॉग [/changelog](/changelog) पेज पर देख सकते हैं!"
           : "Here are the latest highlights from Vivek's portfolio:\n\n* **v2.0.0 (Oct 31, 2026)**: Real-time AI Companion (Groq Qwen & Gemini 3.1), enterprise security headers (HSTS, rate limiting), and verified skills alignment.\n* **v1.9.0**: Interactive clickable contact cards for Email, LinkedIn, and GitHub.\n* **v1.8.0**: Turbopack build and speed optimizations.\n* **Full Journey**: 20 chronological releases spanning from **v0.1.0** (July 1, 2026) to **v2.0.0** (Today).\n\nCheck out the full interactive timeline at [/changelog](/changelog)!";
+    } else if (
+      query.includes("live chat") ||
+      query.includes("1 to 1") ||
+      query.includes("1 on 1") ||
+      query.includes("direct contact") ||
+      query.includes("call") ||
+      query.includes("desktop") ||
+      query.includes("notice") ||
+      query.includes("notice mode")
+    ) {
+      reply =
+        language === "hi"
+          ? "📢 **नोटिस मोड / आगामी अपडेट:**\n\n⚡ **जल्द आ रहा है:** 1-on-1 लाइव चैट और डायरेक्ट संपर्क सुविधा!\n\nवर्तमान में आप विवेक से सीधे जुड़ सकते हैं:\n* 📧 **ईमेल**: [vsoni4107@gmail.com](mailto:vsoni4107@gmail.com)\n* 💼 **LinkedIn**: [linkedin.com/in/vivek-vns](https://linkedin.com/in/vivek-vns)\n* 🐙 **GitHub**: [github.com/webdeveloperdesigner](https://github.com/webdeveloperdesigner)\n\n💻 *नोट: विवेक का पोर्टफोलियो विशेष रूप से डेस्कटॉप अनुभव के लिए डिज़ाइन किया गया है:* [https://vivek01.vercel.app/](https://vivek01.vercel.app/)"
+          : "📢 **AI Notice Mode / Upcoming Feature:**\n\n⚡ **Available Soon:** 1-on-1 Live Chat & Direct Contact!\n\nIn the meantime, you can connect directly with Vivek via:\n* 📧 **Email**: [vsoni4107@gmail.com](mailto:vsoni4107@gmail.com)\n* 💼 **LinkedIn**: [linkedin.com/in/vivek-vns](https://linkedin.com/in/vivek-vns)\n* 🐙 **GitHub**: [github.com/webdeveloperdesigner](https://github.com/webdeveloperdesigner)\n\n💻 *Note: Vivek's portfolio is designed specifically for desktop:* [https://vivek01.vercel.app/](https://vivek01.vercel.app/)";
+    } else if (query.includes("tip") || query.includes("tips") || query.includes("सलाह") || query.includes("टिप")) {
+      reply =
+        language === "hi"
+          ? "💡 **विवेक के व्यावहारिक डेवलपर टिप्स (Live Pro Tips):**\n\n1. **Next.js & Turbopack**: अनावश्यक क्लाइंट कंपोनेंट्स (`'use client'`) से बचें; अधिकतम सर्वर कंपोनेंट्स का उपयोग करने से वेबसाइट सुपर फ़ास्ट लोड होती है।\n2. **Clean Git Practices**: कमिट्स को हमेशा अर्थपूर्ण रखें जैसे `feat:`, `fix:`, `refactor:` ताकि पूरे प्रोजेक्ट का इतिहास साफ़ रहे।\n3. **Smart Contracts (Solidity)**: हमेशा गैस ऑप्टिमाइज़ेशन और रीएंट्रेंसी (ReentrancyGuard) सुरक्षा का ध्यान रखें।\n4. **AI First Integration**: Groq और Gemini जैसी तेज़ APIs को हमेशा सर्वर-साइड फ़ॉलबैक और रेट लिमिटिंग के साथ उपयोग करें।"
+          : "💡 **Vivek's Live Pro Developer Tips:**\n\n1. **Next.js 15 & Turbopack**: Minimize `'use client'` to only where interactivity is needed. Server Components keep your bundle light and load times instant.\n2. **Meaningful Commits**: Use conventional commits (`feat:`, `fix:`, `refactor:`) with exact tags—it makes maintaining and sharing changelogs effortless.\n3. **Solidity & Web3**: Always prioritize gas optimization (e.g. tight variable packing) and security patterns like `ReentrancyGuard` before deployment.\n4. **Dual AI Runners**: Always wrap third-party LLMs (Groq, Gemini) with fallback mechanisms and IP rate limiting for 100% uptime.";
     } else if (query.includes("bodhai")) {
       reply =
         language === "hi"

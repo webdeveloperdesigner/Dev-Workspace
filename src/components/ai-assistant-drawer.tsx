@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLanguage } from "./language-provider";
 import { dictionary } from "@/lib/dictionary";
-import { Bot, X, Send, RotateCcw, Check, Copy, Mail, ExternalLink } from "lucide-react";
+import { Bot, X, Send, RotateCcw, Check, Copy, Mail, ExternalLink, Info, Sparkles } from "lucide-react";
 import { FaGithub, FaLinkedin } from "react-icons/fa6";
 
 interface AiAssistantDrawerProps {
@@ -34,13 +34,23 @@ function FormattedAiResponse({ content }: { content: string }) {
   const lines = content.split("\n");
 
   const renderContactLine = (text: string) => {
-    // Detects Email, LinkedIn, or GitHub contact lines
+    // Only turn into dedicated card if the line is strictly a dedicated contact link line
+    // (e.g. "- Email: ...", "* LinkedIn: ...", "GitHub: ..."), NOT a full sentence containing multiple links!
+    const isContactLineOnly =
+      text.length < 120 &&
+      (text.startsWith("- ") || text.startsWith("* ") || /^(?:Email|LinkedIn|GitHub):/i.test(text.trim()));
+
+    if (!isContactLineOnly) {
+      return null;
+    }
+
+    // Detect Email
     const emailMatch = text.match(/(?:Email:?\s*)?\[(.*?)\]\((mailto:.*?)\)/i);
-    if (emailMatch || text.includes("mailto:")) {
+    if (emailMatch || (text.includes("mailto:") && !text.includes("linkedin.com") && !text.includes("github.com"))) {
       const label = emailMatch ? emailMatch[1] : text.replace(/.*?(vivek[^\s]+@[^\s]+).*/, "$1");
       const href = emailMatch ? emailMatch[2] : `mailto:${label}`;
       return (
-        <div className="flex items-center gap-2 py-1 px-2 rounded-lg bg-muted/40 border border-border/40 hover:bg-muted/70 transition-colors my-1">
+        <div className="flex items-center gap-2 py-1 px-2.5 rounded-lg bg-muted/40 border border-border/40 hover:bg-muted/70 transition-colors my-1">
           <div className="w-6 h-6 rounded-md bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
             <Mail className="w-3.5 h-3.5" />
           </div>
@@ -55,12 +65,13 @@ function FormattedAiResponse({ content }: { content: string }) {
       );
     }
 
+    // Detect LinkedIn (only if not also containing github on same line)
     const linkedInMatch = text.match(/(?:LinkedIn:?\s*)?\[(.*?)\]\((https?:\/\/.*?linkedin\.com.*?)\)/i);
-    if (linkedInMatch || text.toLowerCase().includes("linkedin.com")) {
-      const label = linkedInMatch ? linkedInMatch[1] : "linkedin.com/in/vivek-vns";
-      const href = linkedInMatch ? linkedInMatch[2] : "https://www.linkedin.com/in/vivek-vns/";
+    if (linkedInMatch && !text.toLowerCase().includes("github.com")) {
+      const label = linkedInMatch[1] || "linkedin.com/in/vivek-vns";
+      const href = linkedInMatch[2];
       return (
-        <div className="flex items-center gap-2 py-1 px-2 rounded-lg bg-muted/40 border border-border/40 hover:bg-muted/70 transition-colors my-1">
+        <div className="flex items-center gap-2 py-1 px-2.5 rounded-lg bg-muted/40 border border-border/40 hover:bg-muted/70 transition-colors my-1">
           <div className="w-6 h-6 rounded-md bg-[#0A66C2]/10 text-[#0A66C2] flex items-center justify-center shrink-0">
             <FaLinkedin className="w-3.5 h-3.5" />
           </div>
@@ -78,12 +89,13 @@ function FormattedAiResponse({ content }: { content: string }) {
       );
     }
 
+    // Detect GitHub (only if not also containing linkedin on same line)
     const githubMatch = text.match(/(?:GitHub:?\s*)?\[(.*?)\]\((https?:\/\/.*?github\.com.*?)\)/i);
-    if (githubMatch || text.toLowerCase().includes("github.com/webdeveloperdesigner")) {
-      const label = githubMatch ? githubMatch[1] : "github.com/webdeveloperdesigner";
-      const href = githubMatch ? githubMatch[2] : "https://github.com/webdeveloperdesigner";
+    if (githubMatch && !text.toLowerCase().includes("linkedin.com")) {
+      const label = githubMatch[1] || "github.com/webdeveloperdesigner";
+      const href = githubMatch[2];
       return (
-        <div className="flex items-center gap-2 py-1 px-2 rounded-lg bg-muted/40 border border-border/40 hover:bg-muted/70 transition-colors my-1">
+        <div className="flex items-center gap-2 py-1 px-2.5 rounded-lg bg-muted/40 border border-border/40 hover:bg-muted/70 transition-colors my-1">
           <div className="w-6 h-6 rounded-md bg-foreground/10 text-foreground flex items-center justify-center shrink-0">
             <FaGithub className="w-3.5 h-3.5" />
           </div>
@@ -233,13 +245,15 @@ export function AiAssistantDrawer({ isOpen, onClose }: AiAssistantDrawerProps) {
       : "Hi there! I'm Vivek's AI assistant. Ask me anything about his projects, skills, or experience!";
 
   const defaultSuggestions = [
+    "💡 Live Pro Tip",
+    "📢 Notice Mode",
+    "Desktop Portfolio Link",
     "Tell me about BodhAI",
-    "Show projects",
-    "Skills",
-    "Experience",
-    "Contact",
+    "Skills & Tech Stack",
+    "Contact Vivek",
   ];
 
+  const [showNotice, setShowNotice] = useState(true);
   const [isLiveOnline, setIsLiveOnline] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -356,6 +370,17 @@ export function AiAssistantDrawer({ isOpen, onClose }: AiAssistantDrawerProps) {
           </div>
           <div className="flex items-center gap-1">
             <button
+              onClick={() => setShowNotice((prev) => !prev)}
+              title={showNotice ? "Hide Notice" : "Show Notice"}
+              className={`p-1.5 rounded-lg transition-colors ${
+                showNotice
+                  ? "text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+            >
+              <Info className="w-4 h-4" />
+            </button>
+            <button
               onClick={handleResetChat}
               title="Reset Conversation"
               className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -371,6 +396,35 @@ export function AiAssistantDrawer({ isOpen, onClose }: AiAssistantDrawerProps) {
             </button>
           </div>
         </div>
+
+        {/* Notice Mode Banner */}
+        {showNotice && (
+          <div className="px-3.5 py-2.5 bg-emerald-500/10 border-b border-emerald-500/20 text-xs flex items-center justify-between gap-2.5 transition-all animate-in fade-in slide-in-from-top-1">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="p-1 rounded-md bg-emerald-500/20 text-emerald-400 shrink-0">
+                <Sparkles className="size-3.5" />
+              </span>
+              <p className="text-[11px] leading-tight text-emerald-300">
+                <span className="font-bold text-foreground">Notice:</span> 1-on-1 live chat & direct contact is <strong>available soon</strong>! For desktop layout, visit{" "}
+                <a
+                  href="https://vivek01.vercel.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline font-semibold hover:text-white"
+                >
+                  vivek01.vercel.app
+                </a>
+              </p>
+            </div>
+            <button
+              onClick={() => setShowNotice(false)}
+              className="text-muted-foreground hover:text-foreground p-0.5 rounded transition-colors shrink-0"
+              title="Dismiss Notice"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
+        )}
 
         {/* Chat Messages */}
         <div className="flex-1 p-4 overflow-y-auto space-y-4 no-scrollbar">
