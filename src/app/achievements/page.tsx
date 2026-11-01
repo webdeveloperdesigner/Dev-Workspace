@@ -58,6 +58,10 @@ export default function AchievementsPage() {
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl text-foreground">
           {language === "hi" ? "पुरस्कार एवं प्रमाणपत्र" : "Awards & Certifications"}
         </h1>
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 text-xs font-mono font-medium">
+          <span className="size-1.5 rounded-full bg-amber-500 animate-pulse" />
+          <span>{language === "hi" ? "डेटा जल्द ही अपडेट किया जाएगा" : "Data will be updated soon"}</span>
+        </div>
         <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl">
           {language === "hi"
             ? "शैक्षणिक और व्यावसायिक यात्रा के दौरान अर्जित प्रमुख प्रमाणपत्र, पुरस्कार और मान्यताएं।"

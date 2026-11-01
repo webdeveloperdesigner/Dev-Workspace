@@ -348,6 +348,11 @@ export default function HomePage() {
             {language === "hi" ? "पुरस्कार एवं प्रमाणपत्र" : "Awards & Certifications"}
           </h2>
 
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 text-xs font-mono font-medium">
+            <span className="size-1.5 rounded-full bg-amber-500 animate-pulse" />
+            <span>{language === "hi" ? "डेटा जल्द ही अपडेट किया जाएगा" : "Data will be updated soon"}</span>
+          </div>
+
           <p className="text-xs sm:text-sm text-muted-foreground max-w-lg leading-relaxed">
             {language === "hi"
               ? "अपनी शैक्षणिक और व्यावसायिक यात्रा के दौरान, मैंने AI, मशीन लर्निंग और वेब विकास में प्रमाणपत्र प्राप्त किए हैं।"

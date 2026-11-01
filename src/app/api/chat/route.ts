@@ -4,9 +4,7 @@ import {
   EXPERIENCES,
   PROJECTS,
   ORGANIZATIONS,
-  CERTIFICATIONS,
   TECH_STACK_ITEMS,
-  TOOLS_ITEMS,
 } from "@/lib/data";
 
 interface HistoryMessage {
@@ -90,6 +88,17 @@ export async function POST(req: Request) {
       }
     }
 
+    const defaultApiSuggestions = [
+      "Tell me about Vivek",
+      "Skills & Tech Stack",
+      "Certifications & Achievements",
+      "Explore All Projects",
+      "Work Experience",
+      "Education Details",
+      "Contact Vivek",
+      "Latest Announcements",
+      "Open Desktop Portfolio",
+    ];
     // Format live date and time in IST (Indian Standard Time)
     const currentDateTimeIST = new Intl.DateTimeFormat("en-IN", {
       timeZone: "Asia/Kolkata",
@@ -129,21 +138,30 @@ Current Live System Date & Time: ${currentDateTimeIST} (IST)
      - If visitors ask about live chat, real-time messaging, 1-on-1 calls, direct live support, or real-time communication:
        - Clearly inform them that **1-on-1 Live Chat & Direct Contact** is **Available Soon**!
        - In the meantime, invite them to connect directly via [Email](mailto:${PERSONAL_DATA.email}) or [LinkedIn](${PERSONAL_DATA.linkedin}).
+   - **PORTFOLIO NOTICES & ANNOUNCEMENTS**:
+     - If the visitor asks for "notice", "notices", "announcements", "important notice", "latest announcements", or "नोटिस":
+       - Respond in natural, conversational markdown:
+         * ⚡ **AI Assistant Updates in Progress**: We're working to make your experience smarter, faster, and more accurate!
+         * ⏳ **Awards & Certifications**: Data update is in progress; verified original data will be uploaded soon to replace demo entries.
+         * 💻 **Desktop Experience**: This portfolio is optimized for desktop at [https://vivek01.vercel.app/](https://vivek01.vercel.app/).
+         * 📜 **Changelog**: All version milestones from v0.1.0 to v2.0.0 are documented on [/changelog](/changelog).
    - **DESKTOP-FIRST PORTFOLIO**:
      - Vivek's dedicated desktop experience is live at [https://vivek01.vercel.app/](https://vivek01.vercel.app/). Note that this portfolio is designed specifically for desktop devices.
-   - **LIVE TIPS & PRO TIPS**:
-     - If the user asks for a tip, live tip, pro tip, advice, or career/coding tips:
-       - Give practical developer tips based on Vivek's actual real-world stack (Next.js 15, Turbopack, Tailwind CSS, Solidity smart contracts, AI integration with Groq/Gemini, and clean Git commits).
-       - Keep it inspiring, concise, and actionable!
+
+    - **AWARDS & CERTIFICATIONS STATUS**:
+      - If visitors ask about certificates, awards, credentials, or achievements:
+        - Clarify that Vivek's 3 major certifications are verified & accurate (Oracle OCI AI Foundations, IIT Madras Shaastra Fullstack, DevTown Web Dev), while other entries (like GLA Hackathon participant) are currently placeholders/demo data.
+        - Emphasize that the full verified Awards & Certifications data update is **currently in progress and will be updated with original data soon**! Visitors can inspect ongoing updates at [/achievements](/achievements).
 
 4. **Changelog & Updates Awareness**:
    - If the user asks about updates, changelog, new versions, or what's new (e.g. "what's new?", "show changelog", "updates", "चेंजलॉग"):
      - Explain the recent milestone highlights:
-       - **v2.0.0 (Latest Release - Oct 31, 2026)**: Sub-second live AI Companion (Groq & Gemini), enterprise security headers & IP rate limiting, and updated verified tech stack.
+       - **v2.0.1 (Latest Patch - Nov 1, 2026)**: Secure 30-min sessionStorage chat persistence, stabilized dual AI runners with seamless failover, and live AI update notices.
+       - **v2.0.0 (Major Release - Oct 31, 2026)**: Sub-second live AI Companion, enterprise security headers & IP rate limiting, and updated verified tech stack.
        - **v1.9.0**: Interactive clickable contact cards for Email, LinkedIn, and GitHub.
        - **v1.8.0**: Turbopack root config & build speed fixes.
        - **v1.5.0**: Custom glowing VK logo favicon and Dev-Workspace AI foundation.
-       - **Full History**: Portfolio timeline spans from initial inception **v0.1.0** (July 1, 2026) to **v2.0.0** (Today).
+       - **Full History**: Portfolio timeline spans from initial inception **v0.1.0** (July 1, 2026) to **v2.0.1** (Today).
      - Direct the user to view the complete visual timeline: "You can explore the full interactive timeline on the [/changelog](/changelog) page!"
 
 5. **TONE & PERSONA**:
@@ -190,7 +208,7 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
     const apiKeyGroq = process.env.GROQ_API_KEY || process.env.NEXT_PUBLIC_GROQ_API_KEY;
     const apiKeyGemini = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
-    // 1. Try Groq API FIRST (ultra-fast ~200ms latency, always available, immune to Google 503 spikes)
+    // 1. Try Groq API FIRST (ultra-fast ~200ms latency, high availability)
     if (apiKeyGroq) {
       try {
         const response = await fetch(
@@ -221,13 +239,7 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
             return NextResponse.json({
               reply,
               source: "groq",
-              suggestions: [
-                "View Changelog",
-                "Blockchain Work",
-                "Tell me about BodhAI",
-                "Skills & Tech Stack",
-                "Contact Vivek",
-              ],
+              suggestions: defaultApiSuggestions,
             });
           }
         } else {
@@ -239,13 +251,13 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
       }
     }
 
-    // 2. Try Google Gemini API (gemini-3.1-flash-lite / gemini-flash-latest) as resilient fallback
+    // 2. Try Google Gemini API as resilient BACKUP runner (gemini-3.1-flash-lite)
     if (apiKeyGemini) {
       try {
         const geminiHistory = conversationHistory.map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`).join("\n");
         const fullPrompt = `${systemContext}\n\n# Conversation History:\n${geminiHistory}\n\nUser Question: ${userQuery}`;
 
-        const geminiModels = ["gemini-3.1-flash-lite", "gemini-flash-latest"];
+        const geminiModels = ["gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemini-flash-latest"];
         for (const modelName of geminiModels) {
           const geminiRes = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKeyGemini}`,
@@ -269,13 +281,7 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
               return NextResponse.json({
                 reply,
                 source: "gemini",
-                suggestions: [
-                  "View Changelog",
-                  "Blockchain Work",
-                  "Tell me about BodhAI",
-                  "Skills & Tech Stack",
-                  "Contact Vivek",
-                ],
+                suggestions: defaultApiSuggestions,
               });
             }
           } else {
@@ -318,8 +324,8 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
     } else if (query.includes("changelog") || query.includes("update") || query.includes("version") || query.includes("what's new") || query.includes("whats new") || query.includes("नया")) {
       reply =
         language === "hi"
-          ? "यहाँ हालिया प्रमुख अपडेट्स हैं:\n\n* **v2.0.0 (31 अक्टूबर 2026)**: लाइव AI साथी (Groq व Gemini), मजबूत सुरक्षा (HSTS, Rate Limiting) और सत्यापित स्किल्स संरेखण।\n* **v1.9.0**: संपर्क के लिए सुंदर क्लिक करने योग्य कार्ड (Email, LinkedIn, GitHub)।\n* **v1.8.0**: Turbopack स्पीड और लोडिंग सुधार।\n* **v0.1.0 से 2.0.0**: 1 जुलाई 2026 से आज तक का पूरा सफर।\n\nआप पूरा इंटरेक्टिव चेंजलॉग [/changelog](/changelog) पेज पर देख सकते हैं!"
-          : "Here are the latest highlights from Vivek's portfolio:\n\n* **v2.0.0 (Oct 31, 2026)**: Real-time AI Companion (Groq Qwen & Gemini 3.1), enterprise security headers (HSTS, rate limiting), and verified skills alignment.\n* **v1.9.0**: Interactive clickable contact cards for Email, LinkedIn, and GitHub.\n* **v1.8.0**: Turbopack build and speed optimizations.\n* **Full Journey**: 20 chronological releases spanning from **v0.1.0** (July 1, 2026) to **v2.0.0** (Today).\n\nCheck out the full interactive timeline at [/changelog](/changelog)!";
+          ? "यहाँ हालिया प्रमुख अपडेट्स हैं:\n\n* **v2.0.1 (01 नवंबर 2026)**: सुरक्षित 30 मिनट का sessionStorage चैट इतिहास, उन्नत ड्यूल AI रनर आर्किटेक्चर।\n* **v2.0.0 (31 अक्टूबर 2026)**: लाइव AI साथी, मजबूत सुरक्षा (HSTS, Rate Limiting) और सत्यापित स्किल्स संरेखण।\n* **v1.9.0**: संपर्क के लिए सुंदर क्लिक करने योग्य कार्ड (Email, LinkedIn, GitHub)।\n* **v0.1.0 से 2.0.1**: 1 जुलाई 2026 से आज तक का पूरा सफर।\n\nआप पूरा इंटरेक्टिव चेंजलॉग [/changelog](/changelog) पेज पर देख सकते हैं!"
+          : "Here are the latest highlights from Vivek's portfolio:\n\n* **v2.0.1 (Nov 1, 2026)**: Secure 30-min sessionStorage chat persistence, stabilized dual AI runners with automated failover, and live AI update notices.\n* **v2.0.0 (Oct 31, 2026)**: Real-time AI Companion, enterprise security headers (HSTS, rate limiting), and verified skills alignment.\n* **v1.9.0**: Interactive clickable contact cards for Email, LinkedIn, and GitHub.\n* **Full Journey**: Chronological releases spanning from **v0.1.0** (July 1, 2026) to **v2.0.1** (Today).\n\nCheck out the full interactive timeline at [/changelog](/changelog)!";
     } else if (
       query.includes("live chat") ||
       query.includes("1 to 1") ||
@@ -328,17 +334,13 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
       query.includes("call") ||
       query.includes("desktop") ||
       query.includes("notice") ||
-      query.includes("notice mode")
+      query.includes("notice mode") ||
+      query.includes("announcement")
     ) {
       reply =
         language === "hi"
-          ? "📢 **नोटिस मोड / आगामी अपडेट:**\n\n⚡ **जल्द आ रहा है:** 1-on-1 लाइव चैट और डायरेक्ट संपर्क सुविधा!\n\nवर्तमान में आप विवेक से सीधे जुड़ सकते हैं:\n* 📧 **ईमेल**: [vsoni4107@gmail.com](mailto:vsoni4107@gmail.com)\n* 💼 **LinkedIn**: [linkedin.com/in/vivek-vns](https://linkedin.com/in/vivek-vns)\n* 🐙 **GitHub**: [github.com/webdeveloperdesigner](https://github.com/webdeveloperdesigner)\n\n💻 *नोट: विवेक का पोर्टफोलियो विशेष रूप से डेस्कटॉप अनुभव के लिए डिज़ाइन किया गया है:* [https://vivek01.vercel.app/](https://vivek01.vercel.app/)"
-          : "📢 **AI Notice Mode / Upcoming Feature:**\n\n⚡ **Available Soon:** 1-on-1 Live Chat & Direct Contact!\n\nIn the meantime, you can connect directly with Vivek via:\n* 📧 **Email**: [vsoni4107@gmail.com](mailto:vsoni4107@gmail.com)\n* 💼 **LinkedIn**: [linkedin.com/in/vivek-vns](https://linkedin.com/in/vivek-vns)\n* 🐙 **GitHub**: [github.com/webdeveloperdesigner](https://github.com/webdeveloperdesigner)\n\n💻 *Note: Vivek's portfolio is designed specifically for desktop:* [https://vivek01.vercel.app/](https://vivek01.vercel.app/)";
-    } else if (query.includes("tip") || query.includes("tips") || query.includes("सलाह") || query.includes("टिप")) {
-      reply =
-        language === "hi"
-          ? "💡 **विवेक के व्यावहारिक डेवलपर टिप्स (Live Pro Tips):**\n\n1. **Next.js & Turbopack**: अनावश्यक क्लाइंट कंपोनेंट्स (`'use client'`) से बचें; अधिकतम सर्वर कंपोनेंट्स का उपयोग करने से वेबसाइट सुपर फ़ास्ट लोड होती है।\n2. **Clean Git Practices**: कमिट्स को हमेशा अर्थपूर्ण रखें जैसे `feat:`, `fix:`, `refactor:` ताकि पूरे प्रोजेक्ट का इतिहास साफ़ रहे।\n3. **Smart Contracts (Solidity)**: हमेशा गैस ऑप्टिमाइज़ेशन और रीएंट्रेंसी (ReentrancyGuard) सुरक्षा का ध्यान रखें।\n4. **AI First Integration**: Groq और Gemini जैसी तेज़ APIs को हमेशा सर्वर-साइड फ़ॉलबैक और रेट लिमिटिंग के साथ उपयोग करें।"
-          : "💡 **Vivek's Live Pro Developer Tips:**\n\n1. **Next.js 15 & Turbopack**: Minimize `'use client'` to only where interactivity is needed. Server Components keep your bundle light and load times instant.\n2. **Meaningful Commits**: Use conventional commits (`feat:`, `fix:`, `refactor:`) with exact tags—it makes maintaining and sharing changelogs effortless.\n3. **Solidity & Web3**: Always prioritize gas optimization (e.g. tight variable packing) and security patterns like `ReentrancyGuard` before deployment.\n4. **Dual AI Runners**: Always wrap third-party LLMs (Groq, Gemini) with fallback mechanisms and IP rate limiting for 100% uptime.";
+          ? "यहाँ पोर्टफोलियो से जुड़ी मुख्य घोषणाएं और अपडेट्स हैं:\n\n* ⚡ **AI असिस्टेंट अपडेट प्रगति में हैं:** हम आपके अनुभव को और अधिक स्मार्ट, तेज़ और सटीक बनाने के लिए लगातार काम कर रहे हैं।\n* ⏳ **पुरस्कार एवं प्रमाणपत्र:** मूल और सत्यापित डेटा के साथ अपडेट प्रगति में है।\n* 💻 **डेस्कटॉप अनुभव:** यह पोर्टफोलियो विशेष रूप से [https://vivek01.vercel.app/](https://vivek01.vercel.app/) पर डेस्कटॉप के लिए अनुकूलित है।\n* 📜 **चेंजलॉग:** सभी रिलीज़ और फीचर्स [/changelog](/changelog) पेज पर देख सकते हैं।\n\n*विवेक से सीधे जुड़ने के लिए:*\n* 📧 Email: [vsoni4107@gmail.com](mailto:vsoni4107@gmail.com)\n* 💼 LinkedIn: [linkedin.com/in/vivek-vns](https://linkedin.com/in/vivek-vns)\n* 🐙 GitHub: [github.com/webdeveloperdesigner](https://github.com/webdeveloperdesigner)"
+          : "Here are the current portfolio updates and notices:\n\n* ⚡ **AI Assistant updates are in progress:** We're working to make your experience smarter, faster, and more accurate.\n* ⏳ **Awards & Certifications:** Data update is in progress with authentic credentials.\n* 💻 **Desktop Experience:** Vivek's portfolio is optimized for desktop at [https://vivek01.vercel.app/](https://vivek01.vercel.app/).\n* 📜 **Changelog:** Explore all version milestones from v0.1.0 to v2.0.0 on [/changelog](/changelog).\n\n*Feel free to reach out directly:*\n* 📧 Email: [vsoni4107@gmail.com](mailto:vsoni4107@gmail.com)\n* 💼 LinkedIn: [linkedin.com/in/vivek-vns](https://linkedin.com/in/vivek-vns)\n* 🐙 GitHub: [github.com/webdeveloperdesigner](https://github.com/webdeveloperdesigner)";
     } else if (
       query.includes("time") ||
       query.includes("date") ||
@@ -351,6 +353,18 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
         language === "hi"
           ? `🕒 **वर्तमान दिनांक व समय (IST):**\n\n**${currentDateTimeIST}**\n\nपोर्टफोलियो की नवीनतम रिलीज़ **v2.0.0** है (31 अक्टूबर 2026)। आप पूरा सफर [/changelog](/changelog) पेज पर देख सकते हैं!`
           : `🕒 **Current Date & Time (IST):**\n\n**${currentDateTimeIST}**\n\nThe portfolio's latest release **v2.0.0** is active as of October 31, 2026. Explore the complete interactive timeline at [/changelog](/changelog)!`;
+    } else if (
+      query.includes("certificate") ||
+      query.includes("certification") ||
+      query.includes("award") ||
+      query.includes("achievement") ||
+      query.includes("प्रमाणपत्र") ||
+      query.includes("पुरस्कार")
+    ) {
+      reply =
+        language === "hi"
+          ? "🏆 **पुरस्कार एवं प्रमाणपत्र स्थिति (Awards & Certifications):**\n\n* ✅ **सत्यापित प्रमाणपत्र (3 पूर्णतः प्रामाणिक):**\n  - **Oracle Cloud Infrastructure** — AI Foundations Associate (2025)\n  - **IIT Madras (Shaastra 2026)** — Fullstack Development Workshop\n  - **DevTown** — Certified Web Development Associate (2024)\n\n* ⏳ **अपडेट प्रगति में (Update in Progress):**\n  - अतिरिक्त उपलब्धियां (जैसे GLA हैकाथॉन डेमो एंट्री) जल्द ही मूल और सत्यापित डेटा से अपडेट की जा रही हैं।\n\nआप वर्तमान प्रविष्टियां देखने के लिए [/achievements](/achievements) पेज पर जा सकते हैं!"
+          : "🏆 **Awards & Certifications Status:**\n\n* ✅ **Verified Certifications (3 Active & Accurate):**\n  - **Oracle Cloud Infrastructure**: 2025 Certified AI Foundations Associate\n  - **IIT Madras (Shaastra 2026)**: Fullstack Development Workshop\n  - **DevTown**: Certified Web Development Associate (2024)\n\n* ⏳ **Update in Progress:**\n  - Additional awards (such as the GLA Hackathon demo entry) are currently being refreshed with authentic original credentials soon!\n\nExplore live updates directly on the [/achievements](/achievements) page.";
     } else if (query.includes("bodhai")) {
       reply =
         language === "hi"
@@ -366,13 +380,7 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
     return NextResponse.json({
       reply,
       source: "offline",
-      suggestions: [
-        "View Changelog",
-        "Blockchain Work",
-        "Tell me about BodhAI",
-        "Skills & Tech Stack",
-        "Contact Vivek",
-      ],
+      suggestions: defaultApiSuggestions,
     });
   } catch (error) {
     console.error("Chat API error:", error);

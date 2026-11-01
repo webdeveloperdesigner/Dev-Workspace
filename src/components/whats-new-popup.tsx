@@ -28,23 +28,23 @@ interface UpdateItem {
 const updates: UpdateItem[] = [
   {
     id: 1,
-    date: "OCT 31, 2026",
+    date: "NOV 01, 2026",
     category: "NEW FEATURE",
-    title: "Live AI Assistant",
+    title: "Secure AI Session Storage",
     description:
-      "Integrated Groq and Gemini AI for real-time conversations. Ask about projects, blockchain experience, and full-stack technologies.",
-    icon: Bot,
+      "Implemented tab-isolated secure sessionStorage with 30-min inactivity timeout, zero sensitive data storage, and smooth tab persistence.",
+    icon: ShieldCheck,
     color: "emerald",
     tag: "Featured",
   },
   {
     id: 2,
-    date: "OCT 31, 2026",
-    category: "TECH STACK",
-    title: "Updated Technologies & Skills",
+    date: "NOV 01, 2026",
+    category: "AI ENGINE",
+    title: "Dual AI Runner Stability",
     description:
-      "Improved technology portfolio showcasing TypeScript, Next.js, Solidity, Web3.js, OpenCV, FastAPI, and cloud deployment.",
-    icon: Layers,
+      "High-availability dual LLM pipeline with automated failover for sub-second responses and 100% uptime.",
+    icon: Bot,
     color: "blue",
     tag: "Updated",
   },
@@ -55,7 +55,7 @@ const updates: UpdateItem[] = [
     title: "Enterprise Security & Performance",
     description:
       "Enhanced security with HSTS, clickjacking prevention, API rate limiting, and optimized dark-mode rendering.",
-    icon: ShieldCheck,
+    icon: Layers,
     color: "purple",
     tag: "Improved",
   },

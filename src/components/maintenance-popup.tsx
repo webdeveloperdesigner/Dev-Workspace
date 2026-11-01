@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useLanguage } from "@/components/language-provider";
 import {
   Wrench,
-  Bot,
   X,
   Check,
   Cpu,
@@ -18,20 +17,15 @@ import {
 export function MaintenancePopup() {
   const { language: currentLang } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
-  const [activeLangTab, setActiveLangTab] = useState<"en" | "hi">(
-    currentLang === "hi" ? "hi" : "en"
-  );
+  const [activeLangTab, setActiveLangTab] = useState<"en" | "hi">("en");
 
   useEffect(() => {
     const dismissed = sessionStorage.getItem("maintenance_notice_dismissed");
     if (!dismissed) {
-      setIsOpen(true);
+      const timer = setTimeout(() => setIsOpen(true), 0);
+      return () => clearTimeout(timer);
     }
   }, []);
-
-  useEffect(() => {
-    setActiveLangTab(currentLang === "hi" ? "hi" : "en");
-  }, [currentLang]);
 
   const handleDismiss = () => {
     sessionStorage.setItem("maintenance_notice_dismissed", "true");

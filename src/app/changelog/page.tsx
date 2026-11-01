@@ -55,6 +55,33 @@ interface ChangelogEntry {
 
 const CHANGELOG_DATA: ChangelogEntry[] = [
   {
+    id: "v2.0.1",
+    version: "2.0.1",
+    date: { en: "Nov 01, 2026", hi: "01 नवंबर 2026" },
+    title: {
+      en: "Secure AI Session Storage & Refined Architecture",
+      hi: "सुरक्षित AI चैट सेशन स्टोरेज और उन्नत आर्किटेक्चर",
+    },
+    badge: { en: "Latest Patch", hi: "नवीनतम पैच" },
+    description: {
+      en: "Implemented tab-isolated secure sessionStorage with 30-min inactivity expiry, stabilized Google Gemini 3.1 & Groq dual runners, and added live AI update notices.",
+      hi: "30 मिनट की निष्क्रियता समाप्ति के साथ सुरक्षित sessionStorage, स्थिर Google Gemini 3.1 और Groq ड्यूल रनर्स और लाइव AI अपडेट सूचनाएं जोड़ीं।",
+    },
+    author: { name: PERSONAL_DATA.name, role: "Full-Stack & Blockchain Developer" },
+    highlights: [
+      {
+        icon: ShieldCheck,
+        title: { en: "Secure Session Storage", hi: "सुरक्षित सेशन स्टोरेज" },
+        desc: { en: "30-min inactivity timeout, zero sensitive data storage, and smooth tab persistence.", hi: "30 मिनट की टाइमआउट, पूर्ण सुरक्षा और टैब रिफ्रेश पर भी चैट सुरक्षित।" },
+      },
+      {
+        icon: Bot,
+        title: { en: "Dual AI Runner Stability", hi: "स्थिर ड्यूल AI रनर" },
+        desc: { en: "Groq Qwen primary with verified Google Gemini 3.1 Flash-Lite backup.", hi: "Groq Qwen मुख्य व Google Gemini 3.1 Flash-Lite बैकअप के साथ 100% अपटाइम।" },
+      },
+    ],
+  },
+  {
     id: "v2.0.0",
     version: "2.0.0",
     date: { en: "Oct 31, 2026", hi: "31 अक्टूबर 2026" },
@@ -62,9 +89,9 @@ const CHANGELOG_DATA: ChangelogEntry[] = [
       en: "Fast AI Chat Assistant, Better Security & Clean Tech Stack",
       hi: "तेज AI चैट असिस्टेंट, बेहतर सुरक्षा और सही स्किल्स",
     },
-    badge: { en: "Latest Version", hi: "नया वर्जन" },
+    badge: { en: "Major Release", hi: "प्रमुख रिलीज़" },
     description: {
-      en: "Added a super fast AI chat assistant (using Groq and Gemini) that answers questions about Vivek instantly. Added security to stop spam, and updated my skills list.",
+      en: "Added a super fast AI chat assistant that answers questions about Vivek instantly. Added security to stop spam, and updated my skills list.",
       hi: "सुपर फास्ट AI चैट असिस्टेंट जोड़ा जो विवेक के बारे में तुरंत जवाब देता है। स्पैम रोकने के लिए सुरक्षा बढ़ाई और अपनी सही स्किल्स अपडेट कीं।",
     },
     author: { name: PERSONAL_DATA.name, role: "Full-Stack & Blockchain Developer" },
@@ -448,8 +475,8 @@ export default function ChangelogPage() {
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground font-mono">
             {isHindi
-              ? "संस्करण अपडेट: 0.1.0 – 2.0.0 | 2026"
-              : "Version updates: 0.1.0 – 2.0.0 | 2026"}
+              ? "संस्करण अपडेट: 0.1.0 – 2.0.1 | 2026"
+              : "Version updates: 0.1.0 – 2.0.1 | 2026"}
           </p>
         </div>
 

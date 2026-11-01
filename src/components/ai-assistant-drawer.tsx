@@ -18,6 +18,123 @@ interface Message {
   source?: "gemini" | "groq" | "offline";
 }
 
+const STORAGE_KEY = "vk_ai_chat_session_v1";
+const SESSION_EXPIRY_MS = 30 * 60 * 1000; // 30 minutes inactivity expiry
+const MAX_STORED_MESSAGES = 60; // Tab-session bounds
+const MAX_MESSAGE_LENGTH = 10000;
+
+interface StoredSessionData {
+  timestamp: number;
+  messages: Message[];
+  suggestions?: string[];
+}
+
+/**
+ * Safely parses and validates stored session messages to prevent injection,
+ * corruption, or invalid schema tampering.
+ */
+function loadSecureSessionMessages(): {
+  messages: Message[];
+  suggestions?: string[];
+} | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const rawData = sessionStorage.getItem(STORAGE_KEY);
+    if (!rawData) return null;
+
+    const parsed: unknown = JSON.parse(rawData);
+    if (!parsed || typeof parsed !== "object") return null;
+
+    const data = parsed as Partial<StoredSessionData>;
+    const now = Date.now();
+
+    // Inactivity expiration check (30 minutes)
+    if (!data.timestamp || typeof data.timestamp !== "number" || now - data.timestamp > SESSION_EXPIRY_MS) {
+      sessionStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+
+    if (!Array.isArray(data.messages) || data.messages.length === 0) {
+      return null;
+    }
+
+    // Strict validation of each message
+    const validatedMessages: Message[] = [];
+    for (const msg of data.messages) {
+      if (
+        msg &&
+        typeof msg === "object" &&
+        (msg.sender === "user" || msg.sender === "ai") &&
+        typeof msg.text === "string" &&
+        typeof msg.id === "string"
+      ) {
+        // Enforce safe message length and truncate if excessive
+        const safeText = msg.text.slice(0, MAX_MESSAGE_LENGTH);
+        const validSource =
+          msg.source === "groq" || msg.source === "gemini" || msg.source === "offline"
+            ? msg.source
+            : undefined;
+
+        validatedMessages.push({
+          id: msg.id,
+          sender: msg.sender,
+          text: safeText,
+          source: validSource,
+        });
+      }
+    }
+
+    if (validatedMessages.length === 0) return null;
+
+    // Validate suggestions array if present
+    const validSuggestions =
+      Array.isArray(data.suggestions) && data.suggestions.every((s) => typeof s === "string" && s.length < 100)
+        ? data.suggestions.slice(0, 15)
+        : undefined;
+
+    return {
+      messages: validatedMessages.slice(-MAX_STORED_MESSAGES),
+      suggestions: validSuggestions,
+    };
+  } catch {
+    // Corrupted JSON or storage failure handled safely
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore sessionStorage access errors (e.g. private mode blocked)
+    }
+    return null;
+  }
+}
+
+/**
+ * Safely saves session messages without sensitive information or quota errors
+ */
+function saveSecureSession(messages: Message[], suggestions?: string[]) {
+  if (typeof window === "undefined") return;
+
+  try {
+    const payload: StoredSessionData = {
+      timestamp: Date.now(),
+      messages: messages.slice(-MAX_STORED_MESSAGES),
+      suggestions,
+    };
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  } catch {
+    // Gracefully handle storage quota or security policy limits
+  }
+}
+
+function clearSecureSession() {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Ignore error
+  }
+}
+
 /**
  * Rich message renderer for Bot responses
  * Parses markdown headings (###, ##), bullet points (*, -), bold text (**text**), and inline code (`code`)
@@ -236,7 +353,6 @@ function FormattedAiResponse({ content }: { content: string }) {
 
 export function AiAssistantDrawer({ isOpen, onClose }: AiAssistantDrawerProps) {
   const { language } = useLanguage();
-  const t = dictionary[language].aiAssistant;
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const initialGreeting =
@@ -245,26 +361,46 @@ export function AiAssistantDrawer({ isOpen, onClose }: AiAssistantDrawerProps) {
       : "Hi there! I'm Vivek's AI assistant. Ask me anything about his projects, skills, or experience!";
 
   const defaultSuggestions = [
-    "💡 Live Pro Tip",
-    "📢 Notice Mode",
-    "Desktop Portfolio Link",
-    "Tell me about BodhAI",
+    "Tell me about Vivek",
     "Skills & Tech Stack",
-    "Contact Vivek",
+    "Certifications & Achievements",
+    "Explore All Projects",
+    "Work Experience",
+    "Education Details",
+    "Contact",
+    "Latest Announcements",
+    "Open Desktop Portfolio"
   ];
 
   const [showNotice, setShowNotice] = useState(true);
   const [isLiveOnline, setIsLiveOnline] = useState(true);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      sender: "ai",
-      text: initialGreeting,
-    },
-  ]);
-  const [suggestions, setSuggestions] = useState<string[]>(defaultSuggestions);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const session = loadSecureSessionMessages();
+    if (session && session.messages.length > 0) {
+      return session.messages;
+    }
+    return [
+      {
+        id: "1",
+        sender: "ai",
+        text: initialGreeting,
+      },
+    ];
+  });
+  const [suggestions, setSuggestions] = useState<string[]>(() => {
+    const session = loadSecureSessionMessages();
+    return session?.suggestions || defaultSuggestions;
+  });
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+
+  // Persist messages to secure sessionStorage on update
+  useEffect(() => {
+    // Only persist if we have more than just the initial default greeting, or if restored
+    if (messages.length > 1 || (messages.length === 1 && messages[0].sender === "user")) {
+      saveSecureSession(messages, suggestions);
+    }
+  }, [messages, suggestions]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -279,6 +415,10 @@ export function AiAssistantDrawer({ isOpen, onClose }: AiAssistantDrawerProps) {
   if (!isOpen) return null;
 
   const handleResetChat = () => {
+    // 1. Remove stored conversation from sessionStorage
+    clearSecureSession();
+
+    // 2. Clear state & restore default greeting
     setMessages([
       {
         id: crypto.randomUUID(),
@@ -287,6 +427,7 @@ export function AiAssistantDrawer({ isOpen, onClose }: AiAssistantDrawerProps) {
       },
     ]);
     setSuggestions(defaultSuggestions);
+    setInput("");
   };
 
   const handleSend = async (queryText?: string) => {
@@ -405,15 +546,7 @@ export function AiAssistantDrawer({ isOpen, onClose }: AiAssistantDrawerProps) {
                 <Sparkles className="size-3.5" />
               </span>
               <p className="text-[11px] leading-tight text-emerald-300">
-                <span className="font-bold text-foreground">Notice:</span> 1-on-1 live chat & direct contact is <strong>available soon</strong>! For desktop layout, visit{" "}
-                <a
-                  href="https://vivek01.vercel.app/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline font-semibold hover:text-white"
-                >
-                  vivek01.vercel.app
-                </a>
+                <span className="font-bold text-foreground">Notice:</span> AI Assistant updates are in progress. We&apos;re working to make your experience smarter, faster, and more accurate.
               </p>
             </div>
             <button
