@@ -90,16 +90,25 @@ export async function POST(req: Request) {
       }
     }
 
+    // Format live date and time in IST (Indian Standard Time)
+    const currentDateTimeIST = new Intl.DateTimeFormat("en-IN", {
+      timeZone: "Asia/Kolkata",
+      dateStyle: "full",
+      timeStyle: "medium",
+    }).format(new Date());
+
     // System prompt engineered for strict portfolio & Vivek scope
     const systemContext = `
 You are Vivek's AI Companion on his personal Developer Portfolio.
 Your sole mission is to assist visitors with information about Vivek: his projects, technical skills (Full-Stack, Blockchain, AI), work experience, education at GLA University, and how to contact him.
 
 Language: ${language === "hi" ? "Hindi" : "English"}
+Current Live System Date & Time: ${currentDateTimeIST} (IST)
 
 # STRICT SCOPE & BOUNDARY RULES:
 1. **PORTFOLIO BOUNDARY**:
    - You MUST ONLY answer questions related to Vivek, his portfolio, his skills, his projects (like BodhAI), his tech stack (React, Next.js, Solidity, Firebase, etc.), or getting in touch with him.
+   - **DATE & TIME EXCEPTION**: When asked about the current date, time, or today, you DO have real-time access through the system prompt! Answer directly with the live date and time provided above (${currentDateTimeIST}), warmly mentioning it's in IST.
    - If the user asks about completely unrelated, out-of-scope topics (e.g. general drafting unrelated letters, politics, sports, random coding tasks not related to Vivek's work, general knowledge trivia):
      - **Politely decline and redirect back to Vivek's portfolio**.
      - Example response: "I'm specifically tuned to answer questions about Vivek's portfolio, projects, and skills. Feel free to ask about his work on BodhAI, his Blockchain experience, or his tech stack!"
@@ -330,6 +339,18 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
         language === "hi"
           ? "💡 **विवेक के व्यावहारिक डेवलपर टिप्स (Live Pro Tips):**\n\n1. **Next.js & Turbopack**: अनावश्यक क्लाइंट कंपोनेंट्स (`'use client'`) से बचें; अधिकतम सर्वर कंपोनेंट्स का उपयोग करने से वेबसाइट सुपर फ़ास्ट लोड होती है।\n2. **Clean Git Practices**: कमिट्स को हमेशा अर्थपूर्ण रखें जैसे `feat:`, `fix:`, `refactor:` ताकि पूरे प्रोजेक्ट का इतिहास साफ़ रहे।\n3. **Smart Contracts (Solidity)**: हमेशा गैस ऑप्टिमाइज़ेशन और रीएंट्रेंसी (ReentrancyGuard) सुरक्षा का ध्यान रखें।\n4. **AI First Integration**: Groq और Gemini जैसी तेज़ APIs को हमेशा सर्वर-साइड फ़ॉलबैक और रेट लिमिटिंग के साथ उपयोग करें।"
           : "💡 **Vivek's Live Pro Developer Tips:**\n\n1. **Next.js 15 & Turbopack**: Minimize `'use client'` to only where interactivity is needed. Server Components keep your bundle light and load times instant.\n2. **Meaningful Commits**: Use conventional commits (`feat:`, `fix:`, `refactor:`) with exact tags—it makes maintaining and sharing changelogs effortless.\n3. **Solidity & Web3**: Always prioritize gas optimization (e.g. tight variable packing) and security patterns like `ReentrancyGuard` before deployment.\n4. **Dual AI Runners**: Always wrap third-party LLMs (Groq, Gemini) with fallback mechanisms and IP rate limiting for 100% uptime.";
+    } else if (
+      query.includes("time") ||
+      query.includes("date") ||
+      query.includes("today") ||
+      query.includes("समय") ||
+      query.includes("तारीख") ||
+      query.includes("आज")
+    ) {
+      reply =
+        language === "hi"
+          ? `🕒 **वर्तमान दिनांक व समय (IST):**\n\n**${currentDateTimeIST}**\n\nपोर्टफोलियो की नवीनतम रिलीज़ **v2.0.0** है (31 अक्टूबर 2026)। आप पूरा सफर [/changelog](/changelog) पेज पर देख सकते हैं!`
+          : `🕒 **Current Date & Time (IST):**\n\n**${currentDateTimeIST}**\n\nThe portfolio's latest release **v2.0.0** is active as of October 31, 2026. Explore the complete interactive timeline at [/changelog](/changelog)!`;
     } else if (query.includes("bodhai")) {
       reply =
         language === "hi"
