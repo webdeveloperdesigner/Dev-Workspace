@@ -141,10 +141,11 @@ Current Live System Date & Time: ${currentDateTimeIST} (IST)
    - **PORTFOLIO NOTICES & ANNOUNCEMENTS**:
      - If the visitor asks for "notice", "notices", "announcements", "important notice", "latest announcements", or "नोटिस":
        - Respond in natural, conversational markdown:
-         * ⚡ **AI Assistant Updates in Progress**: We're working to make your experience smarter, faster, and more accurate!
-         * ⏳ **Awards & Certifications**: Data update is in progress; verified original data will be uploaded soon to replace demo entries.
+         * 🔄 **Portfolio Data & AI Updates**: Vivek is currently updating portfolio data, including projects, skills, certifications, and achievements. The AI Assistant's information is also being updated. Some details may be temporarily incomplete or outdated. Thank you for your patience!
+         * 📝 **Coming Soon (Blog & Technical Writing)**: A dedicated Blog & Technical Writing section is under development. Explore tutorials, developer insights, technical articles, and project experiences — powered by VK Auth. Stay tuned!
+         * ⚡ **1-on-1 Live Chat & Direct Contact**: Currently in development and coming soon!
          * 💻 **Desktop Experience**: This portfolio is optimized for desktop at [https://vivek01.vercel.app/](https://vivek01.vercel.app/).
-         * 📜 **Changelog**: All version milestones from v0.1.0 to v2.0.0 are documented on [/changelog](/changelog).
+         * 📜 **Changelog**: All version milestones from v0.1.0 to v2.0.1 are documented on [/changelog](/changelog).
    - **DESKTOP-FIRST PORTFOLIO**:
      - Vivek's dedicated desktop experience is live at [https://vivek01.vercel.app/](https://vivek01.vercel.app/). Note that this portfolio is designed specifically for desktop devices.
 
@@ -339,8 +340,8 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
     ) {
       reply =
         language === "hi"
-          ? "यहाँ पोर्टफोलियो से जुड़ी मुख्य घोषणाएं और अपडेट्स हैं:\n\n* ⚡ **AI असिस्टेंट अपडेट प्रगति में हैं:** हम आपके अनुभव को और अधिक स्मार्ट, तेज़ और सटीक बनाने के लिए लगातार काम कर रहे हैं।\n* ⏳ **पुरस्कार एवं प्रमाणपत्र:** मूल और सत्यापित डेटा के साथ अपडेट प्रगति में है।\n* 💻 **डेस्कटॉप अनुभव:** यह पोर्टफोलियो विशेष रूप से [https://vivek01.vercel.app/](https://vivek01.vercel.app/) पर डेस्कटॉप के लिए अनुकूलित है।\n* 📜 **चेंजलॉग:** सभी रिलीज़ और फीचर्स [/changelog](/changelog) पेज पर देख सकते हैं।\n\n*विवेक से सीधे जुड़ने के लिए:*\n* 📧 Email: [vsoni4107@gmail.com](mailto:vsoni4107@gmail.com)\n* 💼 LinkedIn: [linkedin.com/in/vivek-vns](https://linkedin.com/in/vivek-vns)\n* 🐙 GitHub: [github.com/webdeveloperdesigner](https://github.com/webdeveloperdesigner)"
-          : "Here are the current portfolio updates and notices:\n\n* ⚡ **AI Assistant updates are in progress:** We're working to make your experience smarter, faster, and more accurate.\n* ⏳ **Awards & Certifications:** Data update is in progress with authentic credentials.\n* 💻 **Desktop Experience:** Vivek's portfolio is optimized for desktop at [https://vivek01.vercel.app/](https://vivek01.vercel.app/).\n* 📜 **Changelog:** Explore all version milestones from v0.1.0 to v2.0.0 on [/changelog](/changelog).\n\n*Feel free to reach out directly:*\n* 📧 Email: [vsoni4107@gmail.com](mailto:vsoni4107@gmail.com)\n* 💼 LinkedIn: [linkedin.com/in/vivek-vns](https://linkedin.com/in/vivek-vns)\n* 🐙 GitHub: [github.com/webdeveloperdesigner](https://github.com/webdeveloperdesigner)";
+          ? "यहाँ पोर्टफोलियो से जुड़ी मुख्य घोषणाएं और अपडेट्स हैं:\n\n* 🔄 **पोर्टफोलियो और AI डेटा अपडेट:** विवेक वर्तमान में अपने प्रोजेक्ट्स, स्किल्स, सर्टिफिकेशन्स और उपलब्धियों का डेटा अपडेट कर रहे हैं। AI असिस्टेंट की जानकारी भी अपडेट की जा रही है। कुछ विवरण अस्थायी रूप से अधूरे या पुराने हो सकते हैं। आपके धैर्य के लिए धन्यवाद!\n* 📝 **जल्द आ रहा है (ब्लॉग और तकनीकी लेखन):** एक समर्पित ब्लॉग और तकनीकी लेखन सेक्शन विकसित किया जा रहा है। ट्यूटोरियल, डेवलपर अंतर्दृष्टि और प्रोजेक्ट अनुभव देखें — VK Auth द्वारा संचालित!\n* ⚡ **1-on-1 लाइव चैट:** विकास में है और जल्द ही उपलब्ध होगी!\n* 💻 **डेस्कटॉप अनुभव:** यह पोर्टफोलियो विशेष रूप से [https://vivek01.vercel.app/](https://vivek01.vercel.app/) पर डेस्कटॉप के लिए अनुकूलित है।\n* 📜 **चेंजलॉग:** सभी रिलीज़ v0.1.0 से v2.0.1 तक [/changelog](/changelog) पेज पर देख सकते हैं।\n\n*विवेक से सीधे जुड़ने के लिए:*\n* 📧 Email: [vsoni4107@gmail.com](mailto:vsoni4107@gmail.com)\n* 💼 LinkedIn: [linkedin.com/in/vivek-vns](https://linkedin.com/in/vivek-vns)\n* 🐙 GitHub: [github.com/webdeveloperdesigner](https://github.com/webdeveloperdesigner)"
+          : "Here are the current portfolio updates and notices:\n\n* 🔄 **Portfolio Data & AI Updates:** Vivek is currently updating portfolio data, including projects, skills, certifications, and achievements. The AI Assistant's information is also being updated. Some details may be temporarily incomplete or outdated. Thank you for your patience!\n* 📝 **Coming Soon (Blog & Technical Writing):** A dedicated Blog & Technical Writing section is under development. Explore tutorials, developer insights, technical articles, and project experiences — powered by VK Auth. Stay tuned!\n* ⚡ **1-on-1 Live Chat & Direct Contact:** Currently in development and coming soon!\n* 💻 **Desktop Experience:** Vivek's portfolio is optimized for desktop at [https://vivek01.vercel.app/](https://vivek01.vercel.app/).\n* 📜 **Changelog:** Explore all version milestones from v0.1.0 to v2.0.1 on [/changelog](/changelog).\n\n*Feel free to reach out directly:*\n* 📧 Email: [vsoni4107@gmail.com](mailto:vsoni4107@gmail.com)\n* 💼 LinkedIn: [linkedin.com/in/vivek-vns](https://linkedin.com/in/vivek-vns)\n* 🐙 GitHub: [github.com/webdeveloperdesigner](https://github.com/webdeveloperdesigner)";
     } else if (
       query.includes("time") ||
       query.includes("date") ||
@@ -351,8 +352,8 @@ ${TECH_STACK_ITEMS.map((t) => t.name).join(", ")}
     ) {
       reply =
         language === "hi"
-          ? `🕒 **वर्तमान दिनांक व समय (IST):**\n\n**${currentDateTimeIST}**\n\nपोर्टफोलियो की नवीनतम रिलीज़ **v2.0.0** है (31 अक्टूबर 2026)। आप पूरा सफर [/changelog](/changelog) पेज पर देख सकते हैं!`
-          : `🕒 **Current Date & Time (IST):**\n\n**${currentDateTimeIST}**\n\nThe portfolio's latest release **v2.0.0** is active as of October 31, 2026. Explore the complete interactive timeline at [/changelog](/changelog)!`;
+          ? `🕒 **वर्तमान दिनांक व समय (IST):**\n\n**${currentDateTimeIST}**\n\nपोर्टफोलियो की नवीनतम रिलीज़ **v2.0.1** है (01 नवंबर 2026)। आप पूरा सफर [/changelog](/changelog) पेज पर देख सकते हैं!`
+          : `🕒 **Current Date & Time (IST):**\n\n**${currentDateTimeIST}**\n\nThe portfolio's latest release **v2.0.1** is active as of November 1, 2026. Explore the complete interactive timeline at [/changelog](/changelog)!`;
     } else if (
       query.includes("certificate") ||
       query.includes("certification") ||
